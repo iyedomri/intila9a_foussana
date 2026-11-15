@@ -42,6 +42,10 @@ export interface DemoPost {
   readonly createdAt: Date;
 }
 
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
 interface DemoPostState {
   readonly posts: DemoPost[];
 }
@@ -51,9 +55,37 @@ declare global {
   var __intila9aDemoPostState: DemoPostState | undefined;
 }
 
+const BACKUP_FILE = join(tmpdir(), "intila9a_posts_backup.json");
+
+function persistToDisk(posts: readonly DemoPost[]): void {
+  try {
+    writeFileSync(BACKUP_FILE, JSON.stringify(posts), "utf8");
+  } catch {
+    // Ignore storage issues in restricted environments
+  }
+}
+
+function loadFromDisk(): DemoPost[] {
+  try {
+    if (existsSync(BACKUP_FILE)) {
+      const raw = readFileSync(BACKUP_FILE, "utf8");
+      const parsed = JSON.parse(raw) as DemoPost[];
+      return parsed.map((p) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+        deletedAt: p.deletedAt ? new Date(p.deletedAt) : null,
+      }));
+    }
+  } catch {
+    // Ignore read errors
+  }
+  return [];
+}
+
 function getState(): DemoPostState {
   if (!globalThis.__intila9aDemoPostState) {
-    globalThis.__intila9aDemoPostState = { posts: [] };
+    const diskPosts = loadFromDisk();
+    globalThis.__intila9aDemoPostState = { posts: diskPosts };
   }
 
   return globalThis.__intila9aDemoPostState;
@@ -69,6 +101,7 @@ export function createDemoPost(
   };
 
   getState().posts.unshift(createdPost);
+  persistToDisk(getState().posts);
   return createdPost;
 }
 
@@ -109,6 +142,7 @@ export function deleteDemoPost(id: string, reason?: string): boolean {
   }
   post.deletedAt = new Date();
   post.deletedReason = reason || "Supprimé par la Direction";
+  persistToDisk(getState().posts);
   return true;
 }
 
