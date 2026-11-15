@@ -3,16 +3,22 @@ import { describe, expect, it } from "vitest";
 import { attemptDemoLogin } from "../../src/server/auth/demo-auth-store";
 
 describe("authentication store credentials", () => {
-  it("authenticates teacher with intila9a2026", async () => {
-    const result = await attemptDemoLogin(
+  it("authenticates teacher with intila9a2027 and intila9a2026", async () => {
+    const result2027 = await attemptDemoLogin(
+      "teacher@demo.intila9a.local",
+      "intila9a2027",
+    );
+    expect(result2027.ok).toBe(true);
+    if (result2027.ok) {
+      expect(result2027.result.session.principal.role).toBe("TEACHER");
+      expect(result2027.result.session.principal.email).toBe("teacher@demo.intila9a.local");
+    }
+
+    const result2026 = await attemptDemoLogin(
       "teacher@demo.intila9a.local",
       "intila9a2026",
     );
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.result.session.principal.role).toBe("TEACHER");
-      expect(result.result.session.principal.email).toBe("teacher@demo.intila9a.local");
-    }
+    expect(result2026.ok).toBe(true);
   });
 
   it("authenticates director Fethi Omri with secret code", async () => {
