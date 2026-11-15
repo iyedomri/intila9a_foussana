@@ -233,7 +233,7 @@ These safe defaults resolve product ambiguities without broadening access:
 | Phase | Deliverable | State |
 | --- | --- | --- |
 | 1 | Architecture, schema/migration, source layout, RBAC contract | **Complete** |
-| 2 | Auth, sessions, security foundations, shared RBAC enforcement | Pending |
+| 2 | Auth, sessions, security foundations, shared RBAC enforcement | In progress — local demo adapter and shared policy foundation added |
 | 3 | Director users/assignments/events/moderation/dashboard/audit | Pending |
 | 4 | Teacher post lifecycle and private file uploads | Pending |
 | 5 | Student/parent feeds, calendar, filters, notifications | Pending |

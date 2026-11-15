@@ -5,9 +5,9 @@ A private, security-first portal for an elementary school serving **grades 1 to
 parents can safely view them; the Director manages accounts, events, content,
 and audit activity.
 
-> **Project status:** Phase 1 — architecture, data model, and authorization
-> baseline is complete. Product features are delivered in the subsequent phases
-> listed below; this repository is not yet a runnable portal.
+> **Project status:** Phase 2 foundations are in progress. The local preview
+> provides a working, non-production authentication flow for all four roles; the
+> persistent PostgreSQL features are delivered in the following phases.
 
 ## Technology decisions
 
@@ -69,19 +69,42 @@ an additional safety net, not an authorization substitute.
 - File objects are never public; only authorized, scanned files can receive a
   short-lived download URL.
 
-## Planned local development (after Phase 2)
+## Local visual preview
 
-The runnable setup, full environment variable reference, Docker Compose commands,
-seed credentials, and deployment steps will be added with the executable
-foundation. The intended stack is Node.js 22+, PostgreSQL 16+, and MinIO (or an
-S3-compatible provider).
-
-Until then, schema syntax can be checked after dependencies are installed:
+A working local preview is available now. It is deliberately **not a production
+release**: it uses an in-memory demo identity store so that the login, secure
+cookie, logout, password-reset, CSRF, throttling, and role-specific dashboard
+flows can be reviewed without a database or email provider. Restarting the dev
+server resets all demo data. Production mode refuses to use this adapter.
 
 ```bash
 npm install
-npm run prisma:validate
+npm run dev
+# open http://localhost:3000
 ```
+
+Choose any role card on the login screen to prefill a local-only demo account,
+then select **Se connecter**. You can test logout and the password-reset flow as
+well. No demo account exists outside local development.
+
+The preview uses Node.js 22.12+ and binds to port `3000`. Its public production
+replacement will use PostgreSQL 16+, Prisma, private object storage, a mail
+provider, and Docker Compose in the later delivery phases.
+
+## Validation commands
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
+npm audit --audit-level=high
+```
+
+`npm run prisma:validate` is also provided. In the Arena sandbox it cannot finish
+because Prisma fetches a schema-engine binary from `binaries.prisma.sh`, a host
+outside the permitted outbound network; it will run in a normal Docker/CI setup.
 
 Do not add real credentials to the repository. `.env` files, local database
 volumes, object-store data, and generated framework output are ignored.
