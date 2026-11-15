@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { listDemoPostsByGrade, type DemoPostType } from "@/server/posts/demo-post-store";
+
 export type ReadOnlyAudience = "Élève" | "Parent";
 
 const grades = [1, 2, 3, 4, 5, 6] as const;
@@ -14,6 +16,8 @@ interface PreviewPost {
   readonly title: string;
   readonly type: "EXERCICE" | "EXAMEN" | "LEÇON";
   readonly due: string;
+  readonly authorName?: string;
+  readonly description?: string;
 }
 
 const gradePreviewPosts: Record<GradeLevel, readonly PreviewPost[]> = {
@@ -45,6 +49,16 @@ const gradePreviewPosts: Record<GradeLevel, readonly PreviewPost[]> = {
 
 export function isGradeLevel(value: string): value is `${GradeLevel}` {
   return grades.some((grade) => String(grade) === value);
+}
+
+function displayPostType(type: DemoPostType): PreviewPost["type"] {
+  const labels: Record<DemoPostType, PreviewPost["type"]> = {
+    EXERCISE: "EXERCICE",
+    EXAM: "EXAMEN",
+    LESSON_NOTE: "LEÇON",
+  };
+
+  return labels[type];
 }
 
 export function ReadOnlyGradePicker({ audience }: Readonly<{ audience: ReadOnlyAudience }>): ReactNode {
@@ -94,7 +108,15 @@ export function ReadOnlyGradeFeed({
   }
 
   const grade = Number(gradeValue) as GradeLevel;
-  const posts = gradePreviewPosts[grade];
+  const localPosts: readonly PreviewPost[] = listDemoPostsByGrade(grade).map((post) => ({
+    subject: post.subject,
+    title: post.title,
+    type: displayPostType(post.type),
+    due: `Publié le ${post.createdAt.toLocaleDateString("fr-TN")}`,
+    authorName: post.authorName,
+    description: post.description,
+  }));
+  const posts = [...localPosts, ...gradePreviewPosts[grade]];
   const prefix = audience === "Élève" ? "student-space" : "parent-space";
 
   return (
@@ -125,7 +147,8 @@ export function ReadOnlyGradeFeed({
                     <span className="text-sm font-semibold text-[var(--muted)]">{post.subject}</span>
                   </div>
                   <h2 className="mt-3 text-lg font-extrabold text-[var(--ink)]">{post.title}</h2>
-                  <p className="mt-2 text-sm text-[var(--muted)]">{post.due}</p>
+                  {post.description ? <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{post.description}</p> : null}
+                  <p className="mt-2 text-sm text-[var(--muted)]">{post.due}{post.authorName ? ` · ${post.authorName}` : ""}</p>
                 </div>
               </div>
               <a className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#9ac9d5] px-4 text-sm font-bold text-[var(--brand)] transition hover:bg-[#eef9fb]" download href="/read-only-guide.txt">

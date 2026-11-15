@@ -10,7 +10,6 @@ interface AccessProfile {
   readonly title: string;
   readonly description: string;
   readonly identifier: string;
-  readonly demoPassword: string;
   readonly icon: ReactNode;
 }
 
@@ -19,14 +18,12 @@ const accessProfiles: Record<PrivilegedAccessRole, AccessProfile> = {
     title: "Espace enseignant",
     description: "Entrez le mot de passe de votre accès enseignant pour gérer vos publications.",
     identifier: "teacher@demo.intila9a.local",
-    demoPassword: "Demo!Teacher2026",
     icon: <KeyRound aria-hidden="true" size={24} strokeWidth={2.2} />,
   },
   DIRECTOR: {
     title: "Espace Direction",
     description: "Entrez le mot de passe de votre accès Direction pour administrer l’établissement.",
     identifier: "director@demo.intila9a.local",
-    demoPassword: "Demo!Director2026",
     icon: <ShieldCheck aria-hidden="true" size={24} strokeWidth={2.2} />,
   },
 };
@@ -85,7 +82,7 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
         return;
       }
 
-      router.replace("/dashboard");
+      router.replace(role === "TEACHER" ? "/teacher-post" : "/dashboard");
       router.refresh();
     } catch {
       setError("La connexion sécurisée est indisponible. Réessayez.");
@@ -135,9 +132,6 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
         {!isSubmitting ? <ArrowRight aria-hidden="true" size={18} /> : null}
       </button>
 
-      <button className="mt-4 w-full text-sm font-bold text-[var(--brand)] underline-offset-4 hover:underline" onClick={() => { setPassword(profile.demoPassword); setError(null); }} type="button">
-        Préremplir le mot de passe de démonstration locale
-      </button>
       <p className="mt-5 text-center text-xs leading-5 text-[var(--muted)]">Aperçu local uniquement. La plateforme publiée utilisera des comptes individuels et des mots de passe hachés.</p>
     </form>
   );

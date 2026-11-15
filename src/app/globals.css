@@ -33,13 +33,35 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
+}
+
+.field {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid #bdcad8;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding-inline: 1rem;
+  color: var(--ink);
+  font-weight: 400;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px #bde5ef;
 }
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #f0ad4e;
   outline-offset: 3px;
 }
