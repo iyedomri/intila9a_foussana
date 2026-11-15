@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { listDemoPostsByGrade, type DemoPostType } from "@/server/posts/demo-post-store";
+import { listPostsByGrade } from "@/server/posts/post-service";
+import type { DemoPostType } from "@/server/posts/demo-post-store";
 
 export type ReadOnlyAudience = "Élève" | "Parent";
 
@@ -95,17 +96,18 @@ export function ReadOnlyGradePicker({ audience }: Readonly<{ audience: ReadOnlyA
   );
 }
 
-export function ReadOnlyGradeFeed({
+export async function ReadOnlyGradeFeed({
   audience,
   gradeValue,
-}: Readonly<{ audience: ReadOnlyAudience; gradeValue: string }>): ReactNode {
+}: Readonly<{ audience: ReadOnlyAudience; gradeValue: string }>): Promise<ReactNode> {
   if (!isGradeLevel(gradeValue)) {
     notFound();
   }
 
   const grade = Number(gradeValue) as GradeLevel;
   const targetAudience = audience === "Élève" ? "STUDENTS" : "PARENTS";
-  const localPosts: readonly PreviewPost[] = listDemoPostsByGrade(grade, targetAudience).map((post) => ({
+  const rawPosts = await listPostsByGrade(grade, targetAudience);
+  const localPosts: readonly PreviewPost[] = rawPosts.map((post) => ({
     id: post.id,
     subject: post.subject,
     title: post.title,

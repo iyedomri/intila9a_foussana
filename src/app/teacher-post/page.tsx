@@ -10,7 +10,7 @@ import {
 } from "@/features/posts/teacher-space";
 import { getCurrentSession, getDemoSession } from "@/server/auth/session-service";
 import { canCreatePosts } from "@/server/authorization/policy";
-import { listTeacherPosts } from "@/server/posts/demo-post-store";
+import { listTeacherAnnouncements } from "@/server/posts/post-service";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,7 @@ export default async function TeacherPostPage({
       ? "Espace Direction"
       : "Espace enseignant";
 
-  const rawPosts = listTeacherPosts();
+  const rawPosts = await listTeacherAnnouncements();
   const initialPosts: readonly SerializedTeacherPost[] = rawPosts.map((post) => ({
     id: post.id,
     authorName: post.authorName,

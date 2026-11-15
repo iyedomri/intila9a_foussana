@@ -18,6 +18,14 @@ enum PostType {
   EXERCISE
   EXAM
   LESSON_NOTE
+  ANNOUNCEMENT
+}
+
+enum PostAudience {
+  ALL
+  STUDENTS
+  PARENTS
+  TEACHERS
 }
 
 enum PostStatus {
@@ -170,6 +178,7 @@ model Post {
   id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   authorId     String        @map("author_id") @db.Uuid
   type         PostType
+  audience     PostAudience  @default(ALL)
   title        String        @db.VarChar(160)
   description  String        @db.Text
   subjectId    String        @map("subject_id") @db.Uuid
@@ -192,13 +201,15 @@ model Post {
   @@index([authorId, createdAt])
   @@index([gradeId, classId, subjectId, type, dueDate])
   @@index([deletedAt, status, createdAt])
+  @@index([audience])
   @@map("posts")
 }
 
 model PostFile {
   id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   postId       String         @map("post_id") @db.Uuid
-  storageKey   String         @unique @map("storage_key") @db.VarChar(512)
+  storageKey   String?        @unique @map("storage_key") @db.VarChar(512)
+  dataBase64   String?        @map("data_base64") @db.Text
   mimeType     String         @map("mime_type") @db.VarChar(127)
   size         Int            @db.Integer
   originalName String         @map("original_name") @db.VarChar(255)

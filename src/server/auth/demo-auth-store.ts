@@ -13,6 +13,7 @@ import {
 import type {
   AuthenticatedSession,
   LoginAttemptResult,
+  LoginResult,
   SessionPrincipal,
   UserRole,
 } from "./types";
@@ -323,6 +324,49 @@ export async function attemptDemoLogin(
         idleExpiresAt,
         principal: toPrincipal(account),
       },
+    },
+  };
+}
+
+export function issueSessionForUser(user: SessionPrincipal): LoginResult {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
+  const idleExpiresAt = new Date(now.getTime() + IDLE_TIMEOUT_MS);
+  const sessionId = crypto.randomUUID();
+
+  const tokenPayload: SessionTokenPayload = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    mustChangePassword: user.mustChangePassword,
+    expiresAt: expiresAt.toISOString(),
+  };
+  const token = signSessionPayload(tokenPayload);
+
+  const storedSession: StoredSession = {
+    id: sessionId,
+    tokenHash: hashToken(token),
+    userId: user.id,
+    sessionVersion: 0,
+    expiresAt,
+    idleExpiresAt,
+    lastSeenAt: now,
+    revokedAt: null,
+  };
+
+  const state = getState();
+  state.sessions.set(storedSession.tokenHash, storedSession);
+  state.lastSessionByRole.set(user.role, storedSession.tokenHash);
+
+  return {
+    token,
+    session: {
+      id: sessionId,
+      expiresAt,
+      idleExpiresAt,
+      principal: user,
     },
   };
 }
