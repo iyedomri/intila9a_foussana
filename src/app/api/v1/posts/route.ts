@@ -7,10 +7,33 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/server/auth/session-service";
 import { canCreatePosts } from "@/server/authorization/policy";
-import { createDemoPost } from "@/server/posts/demo-post-store";
+import { createDemoPost, listAllDemoPosts } from "@/server/posts/demo-post-store";
 import { apiError } from "@/server/security/api-response";
 import { hasValidMutationOrigin } from "@/server/security/csrf";
 import { createPostSchema } from "@/server/validators/post";
+
+export async function GET(): Promise<NextResponse> {
+  const posts = listAllDemoPosts(false).map((post) => ({
+    id: post.id,
+    authorName: post.authorName,
+    authorRole: post.authorRole,
+    subject: post.subject,
+    grade: post.grade,
+    title: post.title,
+    description: post.description,
+    type: post.type,
+    audience: post.audience ?? "ALL",
+    hasFile: Boolean(post.file),
+    fileName: post.file?.fileName,
+    fileSize: post.file?.size,
+    createdAt: post.createdAt.toISOString(),
+  }));
+
+  return NextResponse.json(
+    { data: { posts } },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!hasValidMutationOrigin(request)) {
@@ -52,6 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     title: parsed.data.title,
     description: parsed.data.description,
     type: parsed.data.type,
+    audience: parsed.data.audience,
     file: parsed.data.file
       ? {
           id: crypto.randomUUID(),
@@ -69,6 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         post: {
           id: post.id,
           grade: post.grade,
+          audience: post.audience,
           hasFile: Boolean(post.file),
           fileName: post.file?.fileName,
           createdAt: post.createdAt.toISOString(),

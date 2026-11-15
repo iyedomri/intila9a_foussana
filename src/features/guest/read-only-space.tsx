@@ -15,10 +15,11 @@ interface PreviewPost {
   readonly id?: string;
   readonly subject: string;
   readonly title: string;
-  readonly type: "EXERCICE" | "EXAMEN" | "LEÇON";
+  readonly type: "EXERCICE" | "EXAMEN" | "LEÇON" | "ANNONCE";
   readonly due: string;
   readonly authorName?: string;
   readonly description?: string;
+  readonly isSchoolWide?: boolean;
   readonly file?: {
     readonly fileName: string;
     readonly size: number;
@@ -68,9 +69,10 @@ function displayPostType(type: DemoPostType): PreviewPost["type"] {
     EXERCISE: "EXERCICE",
     EXAM: "EXAMEN",
     LESSON_NOTE: "LEÇON",
+    ANNOUNCEMENT: "ANNONCE",
   };
 
-  return labels[type];
+  return labels[type] ?? "LEÇON";
 }
 
 export function ReadOnlyGradePicker({ audience }: Readonly<{ audience: ReadOnlyAudience }>): ReactNode {
@@ -120,7 +122,8 @@ export function ReadOnlyGradeFeed({
   }
 
   const grade = Number(gradeValue) as GradeLevel;
-  const localPosts: readonly PreviewPost[] = listDemoPostsByGrade(grade).map((post) => ({
+  const targetAudience = audience === "Élève" ? "STUDENTS" : "PARENTS";
+  const localPosts: readonly PreviewPost[] = listDemoPostsByGrade(grade, targetAudience).map((post) => ({
     id: post.id,
     subject: post.subject,
     title: post.title,
@@ -128,6 +131,7 @@ export function ReadOnlyGradeFeed({
     due: `Publié le ${post.createdAt.toLocaleDateString("fr-TN")}`,
     authorName: post.authorName,
     description: post.description,
+    isSchoolWide: post.grade === 0,
     file: post.file
       ? {
           fileName: post.file.fileName,
@@ -163,6 +167,11 @@ export function ReadOnlyGradeFeed({
                 <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8f5f8] text-[var(--brand)]"><FileText aria-hidden="true" size={22} /></div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
+                    {post.isSchoolWide ? (
+                      <span className="rounded-full bg-[#fdf3e7] px-3 py-1 text-xs font-bold text-[#b45309]">
+                        🏫 Toute l’école
+                      </span>
+                    ) : null}
                     <span className="rounded-full bg-[#e8f5f8] px-3 py-1 text-xs font-bold text-[#176e91]">{post.type}</span>
                     <span className="text-sm font-semibold text-[var(--muted)]">{post.subject}</span>
                   </div>

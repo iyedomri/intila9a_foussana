@@ -99,6 +99,13 @@ The preview uses Node.js 22.12+ and binds to port `3000`. Its public production
 replacement will use PostgreSQL 16+, Prisma, private object storage, a mail
 provider, and Docker Compose in the later delivery phases.
 
+## Deployment on Vercel
+
+The portal is configured for seamless deployment to Vercel:
+- **Zero-database Showcase Mode:** Set `ENABLE_DEMO_MODE=true` in Vercel environment variables to run the interactive demo with all Director and Teacher features without requiring a database.
+- **Production Mode:** Supply `DATABASE_URL`, `APP_MODE=production`, and S3 credentials.
+- See [`docs/DEPLOYMENT_VERCEL.md`](docs/DEPLOYMENT_VERCEL.md) for full step-by-step instructions.
+
 ## Validation commands
 
 ```bash

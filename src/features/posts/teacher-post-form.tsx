@@ -50,14 +50,23 @@ async function requestCsrfToken(): Promise<string> {
 
 export function TeacherPostForm({
   defaultAuthorName = "",
+  defaultSubject = "",
+  defaultAudience = "ALL",
+  allowSchoolWide = false,
   sessionToken,
+  onPostCreated,
 }: Readonly<{
   defaultAuthorName?: string;
+  defaultSubject?: string;
+  defaultAudience?: "ALL" | "STUDENTS" | "PARENTS";
+  allowSchoolWide?: boolean;
   sessionToken?: string;
+  onPostCreated?: () => void;
 }> = {}): ReactNode {
   const [authorName, setAuthorName] = useState(defaultAuthorName);
-  const [subject, setSubject] = useState("");
-  const [grade, setGrade] = useState("1");
+  const [subject, setSubject] = useState(defaultSubject);
+  const [grade, setGrade] = useState(allowSchoolWide ? "0" : "1");
+  const [audience, setAudience] = useState<"ALL" | "STUDENTS" | "PARENTS">(defaultAudience);
   const [type, setType] = useState("EXERCISE");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -135,6 +144,7 @@ export function TeacherPostForm({
           authorName,
           subject,
           grade: Number(grade),
+          audience,
           type,
           title,
           description,
@@ -143,16 +153,19 @@ export function TeacherPostForm({
       });
       const body = (await response.json()) as CreatePostResponse;
 
-      if (!response.ok || !body.data?.post?.grade) {
+      if (!response.ok || !body.data?.post) {
         setError(body.error?.message ?? "La publication n’a pas pu être enregistrée.");
         return;
       }
 
-      setPublishedGrade(body.data.post.grade);
+      setPublishedGrade(body.data.post.grade ?? Number(grade));
       setHasUploadedFile(Boolean(body.data.post.hasFile));
       setTitle("");
       setDescription("");
       setAttachedFile(null);
+      if (onPostCreated) {
+        onPostCreated();
+      }
     } catch {
       setError("La publication n’a pas pu être enregistrée. Réessayez.");
     } finally {
@@ -166,29 +179,40 @@ export function TeacherPostForm({
         <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e3f3f7] text-[var(--brand)]"><FilePenLine aria-hidden="true" size={23} /></div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--ink)]">Nouvelle publication</h1>
-          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">Choisissez une année, écrivez votre matière, puis publiez un exercice, un examen ou une leçon avec un document PDF téléchargeable.</p>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">Choisissez le public visé, la classe ou toute l’école, puis publiez un cours, un exercice, un examen ou une annonce avec document PDF.</p>
         </div>
       </div>
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
-        <Field label="Votre nom" htmlFor="author-name">
+        <Field label="Votre nom ou signature" htmlFor="author-name">
           <input autoComplete="name" className="field" id="author-name" maxLength={100} onChange={(event) => setAuthorName(event.target.value)} required value={authorName} />
         </Field>
-        <Field label="Matière" htmlFor="subject">
-          <input className="field" id="subject" maxLength={80} onChange={(event) => setSubject(event.target.value)} placeholder="Mathématiques, Sciences…" required value={subject} />
+        <Field label="Matière ou Catégorie" htmlFor="subject">
+          <input className="field" id="subject" maxLength={80} onChange={(event) => setSubject(event.target.value)} placeholder="Mathématiques, Vie scolaire, Direction…" required value={subject} />
         </Field>
-        <Field label="Année" htmlFor="grade">
+        <Field label="Niveau / Destination" htmlFor="grade">
           <select className="field" id="grade" onChange={(event) => setGrade(event.target.value)} value={grade}>
+            {allowSchoolWide ? <option value="0">🏫 Toute l’école (Niveaux 1 à 6)</option> : null}
             {[1, 2, 3, 4, 5, 6].map((level) => <option key={level} value={level}>{level}e année</option>)}
           </select>
         </Field>
-        <Field label="Type" htmlFor="post-type">
-          <select className="field" id="post-type" onChange={(event) => setType(event.target.value)} value={type}>
-            <option value="EXERCISE">Exercice</option>
-            <option value="EXAM">Examen</option>
-            <option value="LESSON_NOTE">Leçon</option>
+        <Field label="Public visé" htmlFor="post-audience">
+          <select className="field" id="post-audience" onChange={(event) => setAudience(event.target.value as "ALL" | "STUDENTS" | "PARENTS")} value={audience}>
+            <option value="ALL">👥 Toute la communauté (Élèves & Parents)</option>
+            <option value="STUDENTS">🎒 Élèves uniquement</option>
+            <option value="PARENTS">👨‍👩‍👧 Parents uniquement</option>
           </select>
         </Field>
+        <div className="sm:col-span-2">
+          <Field label="Type de contenu" htmlFor="post-type">
+            <select className="field" id="post-type" onChange={(event) => setType(event.target.value)} value={type}>
+              <option value="EXERCISE">Exercice</option>
+              <option value="EXAM">Examen / Devoir surveillé</option>
+              <option value="LESSON_NOTE">Leçon / Cours</option>
+              <option value="ANNOUNCEMENT">Annonce administrative / Vie scolaire</option>
+            </select>
+          </Field>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-5">
@@ -241,13 +265,13 @@ export function TeacherPostForm({
       </div>
 
       {error ? <p aria-live="polite" className="mt-5 rounded-xl bg-[#fff0ee] px-4 py-3 text-sm font-medium text-[var(--danger)]" role="alert">{error}</p> : null}
-      {publishedGrade ? (
+      {publishedGrade !== null ? (
         <div className="mt-5 rounded-xl bg-[#edf8ee] px-4 py-3 text-sm text-[#236332]" role="status">
           <span className="flex items-center gap-2 font-bold">
-            <CheckCircle2 aria-hidden="true" size={18} /> Publication enregistrée pour la {publishedGrade}<sup>e</sup> année{hasUploadedFile ? " avec le document PDF attaché" : ""}.
+            <CheckCircle2 aria-hidden="true" size={18} /> {publishedGrade === 0 ? "Publication enregistrée pour toute l’école" : `Publication enregistrée pour la ${publishedGrade}e année`}{hasUploadedFile ? " avec le document PDF attaché" : ""}.
           </span>
-          <Link className="mt-2 inline-block font-bold underline underline-offset-4" href={`/student-space/grade/${publishedGrade}`}>
-            Voir le fil de la {publishedGrade}<sup>e</sup> année
+          <Link className="mt-2 inline-block font-bold underline underline-offset-4" href={publishedGrade === 0 ? "/student-space" : `/student-space/grade/${publishedGrade}`}>
+            {publishedGrade === 0 ? "Voir l'espace public de l'école" : `Voir le fil de la ${publishedGrade}e année`}
           </Link>
         </div>
       ) : null}

@@ -15,8 +15,20 @@ import type { AuthenticatedSession, LoginAttemptResult, UserRole } from "./types
 
 export const SESSION_COOKIE_NAME = "if_session";
 
+export function isDemoModeEnabled(): boolean {
+  if (
+    process.env.ENABLE_DEMO_MODE === "true" ||
+    process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+    process.env.APP_MODE === "demo"
+  ) {
+    return true;
+  }
+
+  return process.env.NODE_ENV !== "production";
+}
+
 function assertLocalDemoMode(): void {
-  if (process.env.NODE_ENV === "production") {
+  if (!isDemoModeEnabled()) {
     throw new Error("DEMO_AUTH_DISABLED_IN_PRODUCTION");
   }
 }
@@ -25,8 +37,8 @@ export async function loginWithPassword(
   email: string,
   password: string,
 ): Promise<LoginAttemptResult> {
-  // The demo adapter is available only for local visual testing. The production
-  // Prisma-backed adapter is introduced with the persistent application layer.
+  // The demo adapter is available for local visual testing or demo deployments.
+  // The production Prisma-backed adapter is introduced with the persistent application layer.
   assertLocalDemoMode();
   return attemptDemoLogin(email, password);
 }
@@ -34,7 +46,7 @@ export async function loginWithPassword(
 export async function getCurrentSession(
   fallbackRole?: UserRole,
 ): Promise<AuthenticatedSession | null> {
-  if (process.env.NODE_ENV === "production") {
+  if (!isDemoModeEnabled()) {
     return null;
   }
 

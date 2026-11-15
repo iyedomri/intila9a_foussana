@@ -29,6 +29,22 @@ describe("teacher post validation", () => {
     expect(createPostSchema.safeParse(postWithPdf).success).toBe(true);
   });
 
+  it("accepts school-wide announcements with audience targeting", () => {
+    const schoolWidePost = {
+      ...validPost,
+      grade: 0,
+      type: "ANNOUNCEMENT",
+      audience: "PARENTS",
+    };
+    const parsed = createPostSchema.safeParse(schoolWidePost);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.grade).toBe(0);
+      expect(parsed.data.type).toBe("ANNOUNCEMENT");
+      expect(parsed.data.audience).toBe("PARENTS");
+    }
+  });
+
   it("rejects files exceeding size limits", () => {
     const postWithBigFile = {
       ...validPost,

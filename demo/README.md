@@ -29,7 +29,13 @@ Then open `http://localhost:3000` (or use the Arena Live Preview).
 3. **Verify publication & PDF download**:
    Visit that grade in the read-only Student or Parent view to see your newly published post appear immediately in the feed with its attached PDF file badge, and click **Télécharger le PDF** to download your uploaded document.
 4. **Director space** (`/director-access`):
-   Enter the local director access code (`Demo!Director2026` or click **Remplir**) to access the administration dashboard.
+   Enter the local director access code (`Demo!Director2026` or click **Remplir**) to access the administration dashboard (`/dashboard`).
+   - **Publier une annonce / consigne** : Publiez pour toute l'école (`🏫 Toute l'école (Niveaux 1 à 6)`) ou pour une classe spécifique, en ciblant le public souhaité (`👥 Toute la communauté`, `🎒 Élèves uniquement`, ou `👨‍👩‍👧 Parents uniquement`), avec document PDF joint optionnel.
+   - **Modération des publications** : Consultez en temps réel toutes les publications de l'école avec filtres avancés (niveau, public, type, recherche).
+   - **Suppression / Retrait d'un contenu** : Cliquez sur **Supprimer** sur n'importe quel post, choisissez le motif de modération (information obsolète, erreur, etc.), et validez pour archiver le contenu immédiatement avec journal d'audit.
+   - **Historique & Journal** : Activez l'option *Voir supprimées* pour inspecter les publications archivées et leurs motifs de retrait.
+5. **Déploiement sur Vercel** :
+   Consultez [`docs/DEPLOYMENT_VERCEL.md`](../docs/DEPLOYMENT_VERCEL.md) pour les instructions de mise en ligne sur Vercel en mode Démo (`ENABLE_DEMO_MODE=true`) ou en mode Production avec base PostgreSQL.
 
 ## Demo credentials
 

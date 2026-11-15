@@ -44,11 +44,20 @@ export default async function TeacherPostPage({
           <p className="mt-1 text-sm text-[var(--muted)]">Connecté en tant que {session.principal.firstName} {session.principal.lastName}</p>
         </div>
         <div className="flex items-center gap-3">
+          {session.principal.role === "DIRECTOR" ? (
+            <Link
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#c7d3df] bg-white px-4 text-sm font-bold text-[var(--ink)] transition hover:border-[#8ca2b5]"
+              href={urlToken ? `/dashboard?auth=${encodeURIComponent(urlToken)}` : "/dashboard"}
+            >
+              Tableau de bord
+            </Link>
+          ) : null}
           <Link className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#c7d3df] bg-white px-4 text-sm font-bold text-[var(--ink)] transition hover:border-[#8ca2b5]" href="/"><LogOut aria-hidden="true" size={17} />Changer d’espace</Link>
           <LogoutButton />
         </div>
       </header>
       <TeacherPostForm
+        allowSchoolWide={session.principal.role === "DIRECTOR"}
         defaultAuthorName={`${session.principal.firstName} ${session.principal.lastName}`}
         sessionToken={urlToken}
       />
