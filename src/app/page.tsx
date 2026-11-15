@@ -23,28 +23,28 @@ export default function HomePage(): ReactNode {
 
         <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <AccessCard
-            description="Consulter le guide de démonstration et télécharger les documents publics."
+            description="Consulter les cours, exercices et télécharger les documents de classe."
             href="/student-space"
             icon={<GraduationCap aria-hidden="true" size={25} />}
             label="Je suis élève"
             tone="sky"
           />
           <AccessCard
-            description="Accéder à l’aperçu de consultation réservé aux familles."
+            description="Accéder au suivi pédagogique et aux annonces scolaires pour les familles."
             href="/parent-space"
             icon={<UsersRound aria-hidden="true" size={25} />}
             label="Je suis parent"
             tone="mint"
           />
           <AccessCard
-            description="Accéder à l’espace professionnel avec un mot de passe enseignant."
+            description="Publier les cours, devoirs et examens pour vos classes."
             href="/teacher-access"
             icon={<BookOpenCheck aria-hidden="true" size={25} />}
             label="Je suis enseignant"
             tone="gold"
           />
           <AccessCard
-            description="Gérer l’établissement avec le mot de passe Direction."
+            description="Superviser l’établissement, publier les annonces et modérer les contenus."
             href="/director-access"
             icon={<ShieldCheck aria-hidden="true" size={25} />}
             label="Je suis Direction"
@@ -53,7 +53,7 @@ export default function HomePage(): ReactNode {
         </div>
 
         <p className="mx-auto mt-8 max-w-3xl text-center text-sm leading-6 text-[var(--muted)]">
-          Les espaces élève et parent sont en lecture seule. Dans la version publiée, les contenus de classe et les téléchargements privés restent liés à l’élève ou à l’enfant autorisé.
+          Portail officiel de l’école primaire Intila9a Foussana — Classes de la 1<sup>re</sup> à la 6<sup>e</sup> année.
         </p>
       </section>
     </main>

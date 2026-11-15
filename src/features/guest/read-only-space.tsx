@@ -34,30 +34,12 @@ function formatFileSize(bytes: number): string {
 }
 
 const gradePreviewPosts: Record<GradeLevel, readonly PreviewPost[]> = {
-  1: [
-    { subject: "Français", title: "Les sons et les syllabes", type: "EXERCICE", due: "À revoir cette semaine" },
-    { subject: "Mathématiques", title: "Compter jusqu’à 20", type: "LEÇON", due: "Disponible maintenant" },
-  ],
-  2: [
-    { subject: "Mathématiques", title: "Addition et soustraction", type: "EXERCICE", due: "À remettre vendredi" },
-    { subject: "Français", title: "Compréhension de texte", type: "LEÇON", due: "Disponible maintenant" },
-  ],
-  3: [
-    { subject: "Sciences", title: "Les états de l’eau", type: "LEÇON", due: "Disponible maintenant" },
-    { subject: "Mathématiques", title: "Tables de multiplication", type: "EXAMEN", due: "Calendrier à confirmer" },
-  ],
-  4: [
-    { subject: "Français", title: "Le groupe nominal", type: "EXERCICE", due: "À remettre mardi" },
-    { subject: "Sciences", title: "Le système solaire", type: "LEÇON", due: "Disponible maintenant" },
-  ],
-  5: [
-    { subject: "Mathématiques", title: "Fractions et mesures", type: "EXERCICE", due: "À remettre jeudi" },
-    { subject: "Histoire", title: "La Tunisie antique", type: "LEÇON", due: "Disponible maintenant" },
-  ],
-  6: [
-    { subject: "Français", title: "Production écrite", type: "EXAMEN", due: "Calendrier à confirmer" },
-    { subject: "Sciences", title: "Le corps humain", type: "LEÇON", due: "Disponible maintenant" },
-  ],
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: [],
+  6: [],
 };
 
 export function isGradeLevel(value: string): value is `${GradeLevel}` {
@@ -160,48 +142,58 @@ export function ReadOnlyGradeFeed({
       </section>
 
       <div className="mt-8 grid gap-4">
-        {posts.map((post, index) => (
-          <article className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-[0_10px_30px_rgba(31,68,100,0.06)] sm:p-7" key={`${post.title}-${index}`}>
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex gap-4">
-                <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8f5f8] text-[var(--brand)]"><FileText aria-hidden="true" size={22} /></div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {post.isSchoolWide ? (
-                      <span className="rounded-full bg-[#fdf3e7] px-3 py-1 text-xs font-bold text-[#b45309]">
-                        🏫 Toute l’école
-                      </span>
-                    ) : null}
-                    <span className="rounded-full bg-[#e8f5f8] px-3 py-1 text-xs font-bold text-[#176e91]">{post.type}</span>
-                    <span className="text-sm font-semibold text-[var(--muted)]">{post.subject}</span>
-                  </div>
-                  <h2 className="mt-3 text-lg font-extrabold text-[var(--ink)]">{post.title}</h2>
-                  {post.description ? <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{post.description}</p> : null}
-                  {post.file ? (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#b2dde7] bg-[#f0f8fa] px-3 py-1.5 text-xs font-semibold text-[#176281]">
-                      <FileText aria-hidden="true" size={15} />
-                      <span className="font-bold">{post.file.fileName}</span>
-                      <span className="text-[#5b879c]">({formatFileSize(post.file.size)})</span>
+        {posts.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-[#bdcad8] bg-white p-12 text-center shadow-sm">
+            <NotebookTabs aria-hidden="true" className="mx-auto text-[var(--muted)]" size={40} />
+            <h2 className="mt-4 text-lg font-bold text-[var(--ink)]">Aucune publication pour cette classe</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Les enseignants et la Direction publieront les cours, devoirs et documents PDF pour ce niveau dès qu’ils seront disponibles.
+            </p>
+          </div>
+        ) : (
+          posts.map((post, index) => (
+            <article className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-[0_10px_30px_rgba(31,68,100,0.06)] sm:p-7" key={`${post.title}-${index}`}>
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-4">
+                  <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8f5f8] text-[var(--brand)]"><FileText aria-hidden="true" size={22} /></div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {post.isSchoolWide ? (
+                        <span className="rounded-full bg-[#fdf3e7] px-3 py-1 text-xs font-bold text-[#b45309]">
+                          🏫 Toute l’école
+                        </span>
+                      ) : null}
+                      <span className="rounded-full bg-[#e8f5f8] px-3 py-1 text-xs font-bold text-[#176e91]">{post.type}</span>
+                      <span className="text-sm font-semibold text-[var(--muted)]">{post.subject}</span>
                     </div>
-                  ) : null}
-                  <p className="mt-2 text-sm text-[var(--muted)]">{post.due}{post.authorName ? ` · ${post.authorName}` : ""}</p>
+                    <h2 className="mt-3 text-lg font-extrabold text-[var(--ink)]">{post.title}</h2>
+                    {post.description ? <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{post.description}</p> : null}
+                    {post.file ? (
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#b2dde7] bg-[#f0f8fa] px-3 py-1.5 text-xs font-semibold text-[#176281]">
+                        <FileText aria-hidden="true" size={15} />
+                        <span className="font-bold">{post.file.fileName}</span>
+                        <span className="text-[#5b879c]">({formatFileSize(post.file.size)})</span>
+                      </div>
+                    ) : null}
+                    <p className="mt-2 text-sm text-[var(--muted)]">{post.due}{post.authorName ? ` · ${post.authorName}` : ""}</p>
+                  </div>
                 </div>
+                <a
+                  className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold shadow-sm transition ${
+                    post.file
+                      ? "bg-[var(--brand)] text-white hover:bg-[var(--brand-strong)]"
+                      : "border border-[#9ac9d5] text-[var(--brand)] hover:bg-[#eef9fb]"
+                  }`}
+                  download={post.file?.fileName ?? "document-exemple.pdf"}
+                  href={post.file?.downloadUrl ?? "/document-exemple.pdf"}
+                >
+                  <Download aria-hidden="true" size={17} />
+                  {post.file ? "Télécharger le PDF" : "Télécharger"}
+                </a>
               </div>
-              <a
-                className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold shadow-sm transition ${
-                  post.file
-                    ? "bg-[var(--brand)] text-white hover:bg-[var(--brand-strong)]"
-                    : "border border-[#9ac9d5] text-[var(--brand)] hover:bg-[#eef9fb]"
-                }`}
-                download={post.file?.fileName ?? "document-exemple.pdf"}
-                href={post.file?.downloadUrl ?? "/document-exemple.pdf"}
-              >
-                <Download aria-hidden="true" size={17} />
-                {post.file ? "Télécharger le PDF" : "Télécharger"}
-              </a>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))
+        )}
       </div>
 
       <aside className="mt-8 rounded-3xl bg-[var(--ink)] p-6 text-white">

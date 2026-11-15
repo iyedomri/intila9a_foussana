@@ -61,7 +61,7 @@ export default async function TeacherPostPage({
         defaultAuthorName={`${session.principal.firstName} ${session.principal.lastName}`}
         sessionToken={urlToken}
       />
-      <p className="mt-6 text-center text-xs leading-5 text-[var(--muted)]">Les publications ajoutées dans cet aperçu sont conservées uniquement tant que le serveur local reste actif.</p>
+      <p className="mt-6 text-center text-xs leading-5 text-[var(--muted)]">Les publications validées sont directement transmises dans le fil de classe ou de l’école.</p>
     </main>
   );
 }

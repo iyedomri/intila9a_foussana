@@ -3,28 +3,6 @@
 import { ArrowRight, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
 import { type FormEvent, type ReactNode, useState } from "react";
 
-interface DemoCredential {
-  readonly label: string;
-  readonly email: string;
-  readonly password: string;
-  readonly description: string;
-}
-
-const demoCredentials: readonly DemoCredential[] = [
-  {
-    label: "Direction",
-    email: "director@demo.intila9a.local",
-    password: "Demo!Director2026",
-    description: "Gestion, modération et journal d’audit",
-  },
-  {
-    label: "Enseignant",
-    email: "teacher@demo.intila9a.local",
-    password: "Demo!Teacher2026",
-    description: "Publications et contenus de ses classes",
-  },
-];
-
 interface CsrfResponse {
   readonly data?: {
     readonly token?: string;
@@ -48,13 +26,12 @@ async function requestCsrfToken(): Promise<string> {
     cache: "no-store",
   });
   const body = (await response.json()) as CsrfResponse;
-  const token = body.data?.token;
 
-  if (!response.ok || !token) {
+  if (!response.ok || !body.data?.token) {
     throw new Error("CSRF_BOOTSTRAP_FAILED");
   }
 
-  return token;
+  return body.data.token;
 }
 
 export function LoginForm(): ReactNode {
@@ -63,12 +40,6 @@ export function LoginForm(): ReactNode {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function useDemoCredential(credential: DemoCredential): void {
-    setEmail(credential.email);
-    setPassword(credential.password);
-    setError(null);
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -89,7 +60,7 @@ export function LoginForm(): ReactNode {
       const body = (await response.json()) as LoginResponse;
 
       if (!response.ok) {
-        setError(body.error?.message ?? "Connexion impossible. Réessayez.");
+        setError(body.error?.message ?? "Les identifiants transmis ne permettent pas de vous connecter.");
         return;
       }
 
@@ -114,7 +85,7 @@ export function LoginForm(): ReactNode {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="mx-auto w-full max-w-lg">
       <form
         className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-[0_20px_60px_rgba(31,68,100,0.12)] sm:p-8"
         onSubmit={handleSubmit}
@@ -124,24 +95,24 @@ export function LoginForm(): ReactNode {
             <ShieldCheck aria-hidden="true" size={24} strokeWidth={2.2} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[var(--ink)]">Bienvenue</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--ink)]">Connexion sécurisée</h1>
             <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-              Connectez-vous pour accéder à votre espace privé.
+              Accédez à votre espace Intila9a Foussana.
             </p>
           </div>
         </div>
 
         <div className="space-y-5">
           <label className="grid gap-2 text-sm font-semibold text-[var(--ink)]" htmlFor="email">
-            Adresse e-mail
+            Adresse e-mail ou identifiant
             <input
               autoComplete="email"
               className="min-h-12 rounded-xl border border-[#bdcad8] bg-white px-4 text-base font-normal outline-none transition placeholder:text-[#8190a3] focus:border-[var(--brand)] focus:ring-4 focus:ring-[#bde5ef]"
               id="email"
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="nom@ecole.tn"
+              placeholder="directeur@ecole-foussana.tn ou enseignant@..."
               required
-              type="email"
+              type="text"
               value={email}
             />
           </label>
@@ -190,27 +161,6 @@ export function LoginForm(): ReactNode {
           Mot de passe oublié ?
         </a>
       </form>
-
-      <aside aria-label="Comptes de démonstration" className="rounded-3xl border border-[#cce7ef] bg-[#edf8fb] p-5 sm:p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#38718a]">Aperçu local</p>
-        <h2 className="mt-2 text-xl font-bold tracking-tight text-[var(--ink)]">Tester les accès sécurisés</h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          Ces comptes sont uniquement disponibles dans le serveur local de démonstration.
-        </p>
-        <div className="mt-5 grid gap-3">
-          {demoCredentials.map((credential) => (
-            <button
-              className="rounded-2xl border border-[#cae3eb] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#87c7d9] hover:shadow-sm"
-              key={credential.email}
-              onClick={() => useDemoCredential(credential)}
-              type="button"
-            >
-              <span className="block text-sm font-bold text-[var(--ink)]">{credential.label}</span>
-              <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">{credential.description}</span>
-            </button>
-          ))}
-        </div>
-      </aside>
     </div>
   );
 }

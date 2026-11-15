@@ -9,12 +9,6 @@ interface CsrfResponse {
   readonly data?: { readonly token?: string };
 }
 
-interface ForgotResponse {
-  readonly data?: {
-    readonly demoResetPath?: string;
-  };
-}
-
 async function csrfToken(): Promise<string> {
   const response = await fetch("/api/v1/auth/csrf", {
     credentials: "same-origin",
@@ -32,7 +26,6 @@ async function csrfToken(): Promise<string> {
 export function ForgotPasswordForm(): ReactNode {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [demoPath, setDemoPath] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -47,8 +40,6 @@ export function ForgotPasswordForm(): ReactNode {
         headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
         body: JSON.stringify({ email }),
       });
-      const payload = (await response.json()) as ForgotResponse;
-      setDemoPath(payload.data?.demoResetPath ?? null);
       setCompleted(response.ok);
     } finally {
       setIsSubmitting(false);
@@ -67,7 +58,13 @@ export function ForgotPasswordForm(): ReactNode {
       <button className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-5 text-sm font-bold text-white transition hover:bg-[var(--brand-strong)] disabled:opacity-60" disabled={isSubmitting} type="submit">
         {isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" size={18} /> : null} {isSubmitting ? "Envoi…" : "Envoyer les instructions"}
       </button>
-      {completed ? <div className="mt-5 rounded-xl bg-[#edf8ee] p-4 text-sm text-[#236332]" role="status"><span className="flex items-center gap-2 font-bold"><CheckCircle2 aria-hidden="true" size={18} /> Vérifiez votre boîte de réception.</span>{demoPath ? <Link className="mt-3 block font-bold underline underline-offset-4" href={demoPath}>Ouvrir le lien de démonstration</Link> : null}</div> : null}
+      {completed ? (
+        <div className="mt-5 rounded-xl bg-[#edf8ee] p-4 text-sm text-[#236332]" role="status">
+          <span className="flex items-center gap-2 font-bold">
+            <CheckCircle2 aria-hidden="true" size={18} /> Un lien de réinitialisation sécurisé a été envoyé à votre adresse e-mail.
+          </span>
+        </div>
+      ) : null}
       <Link className="mt-5 block text-center text-sm font-bold text-[var(--brand)] underline-offset-4 hover:underline" href="/login">Retour à la connexion</Link>
     </form>
   );

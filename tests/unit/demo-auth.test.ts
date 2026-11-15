@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { attemptDemoLogin } from "../../src/server/auth/demo-auth-store";
 
-describe("demo auth store credentials", () => {
-  it("authenticates teacher with Demo!Teacher2026", async () => {
+describe("authentication store credentials", () => {
+  it("authenticates teacher with intila9a2026", async () => {
     const result = await attemptDemoLogin(
       "teacher@demo.intila9a.local",
-      "Demo!Teacher2026",
+      "intila9a2026",
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -15,15 +15,23 @@ describe("demo auth store credentials", () => {
     }
   });
 
-  it("authenticates director with Demo!Director2026", async () => {
+  it("authenticates director Fethi Omri with secret code", async () => {
     const result = await attemptDemoLogin(
       "director@demo.intila9a.local",
-      "Demo!Director2026",
+      "fethi****",
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.result.session.principal.role).toBe("DIRECTOR");
+      expect(result.result.session.principal.firstName).toBe("Fethi");
+      expect(result.result.session.principal.lastName).toBe("Omri");
     }
+
+    const aliasResult = await attemptDemoLogin(
+      "fethi.omri@ecole-foussana.tn",
+      "fethi****",
+    );
+    expect(aliasResult.ok).toBe(true);
   });
 
   it("authenticates student and parent demo accounts", async () => {

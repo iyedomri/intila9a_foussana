@@ -26,21 +26,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const resetToken = requestPasswordReset(parsed.data.email);
-  const payload: {
-    accepted: boolean;
-    message: string;
-    demoResetPath?: string;
-  } = { ...GENERIC_FORGOT_RESPONSE };
-
-  // Never expose reset material in production. This local-only convenience lets
-  // reviewers exercise the complete reset flow without configuring an email provider.
-  if (process.env.NODE_ENV !== "production" && resetToken) {
-    payload.demoResetPath = `/reset-password?token=${encodeURIComponent(resetToken)}`;
-  }
+  requestPasswordReset(parsed.data.email);
 
   return NextResponse.json(
-    { data: payload },
+    { data: GENERIC_FORGOT_RESPONSE },
     { status: 202, headers: { "Cache-Control": "no-store" } },
   );
 }
