@@ -12,7 +12,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   response.cookies.set(CSRF_COOKIE_NAME, token, {
     httpOnly: false,
-    sameSite: "strict",
+    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60,

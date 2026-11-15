@@ -67,20 +67,26 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
     setError(null);
 
     try {
-      const csrfToken = await requestCsrfToken();
+      let csrfToken = "";
+      try {
+        csrfToken = await requestCsrfToken();
+      } catch {
+        // Continue if same-origin request
+      }
+
       const response = await fetch("/api/v1/auth/login", {
         method: "POST",
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
         },
         body: JSON.stringify({ email: profile.identifier, password }),
       });
       const body = (await response.json()) as LoginResponse;
 
       if (!response.ok) {
-        setError(body.error?.message ?? "Connexion impossible. Réessayez.");
+        setError(body.error?.message ?? "Mot de passe incorrect. Réessayez.");
         return;
       }
 

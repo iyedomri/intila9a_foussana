@@ -19,6 +19,17 @@ describe("authentication store credentials", () => {
       "intila9a2026",
     );
     expect(result2026.ok).toBe(true);
+
+    // Smart identifier resolution
+    const shortIdResult = await attemptDemoLogin("teacher", "intila9a2027");
+    expect(shortIdResult.ok).toBe(true);
+
+    const enseignantResult = await attemptDemoLogin("enseignant", "intila9a2027");
+    expect(enseignantResult.ok).toBe(true);
+
+    // Any email with correct teacher password resolves to teacher
+    const anyEmailResult = await attemptDemoLogin("prof.maths@ecole.tn", "intila9a2027");
+    expect(anyEmailResult.ok).toBe(true);
   });
 
   it("authenticates director Fethi Omri with secret code", async () => {

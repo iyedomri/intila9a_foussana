@@ -27,5 +27,11 @@ describe("password policy", () => {
       expect(parsed.data.email).toBe("parent@demo.intila9a.local");
       expect("role" in parsed.data).toBe(false);
     }
+
+    const shortId = loginSchema.safeParse({
+      email: "teacher",
+      password: "intila9a2027",
+    });
+    expect(shortId.success).toBe(true);
   });
 });
