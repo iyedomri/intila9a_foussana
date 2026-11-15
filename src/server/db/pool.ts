@@ -7,12 +7,21 @@ declare global {
   var __intila9aPgPool: Pool | undefined;
 }
 
+function getDatabaseUrl(): string {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    ""
+  ).trim();
+}
+
 export function isDatabaseConfigured(): boolean {
-  return Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0);
+  return getDatabaseUrl().length > 0;
 }
 
 function getDatabaseSslConfig(): boolean | { rejectUnauthorized: boolean } {
-  const dbUrl = process.env.DATABASE_URL ?? "";
+  const dbUrl = getDatabaseUrl();
 
   // If local development or explicit disable, omit SSL
   if (
@@ -36,7 +45,7 @@ export function getDatabasePool(): Pool {
     throw new Error("DATABASE_NOT_CONFIGURED: DATABASE_URL is not set.");
   }
 
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = getDatabaseUrl();
   const ssl = getDatabaseSslConfig();
 
   globalThis.__intila9aPgPool = new Pool({

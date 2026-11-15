@@ -34,7 +34,7 @@ export function isDemoModeEnabled(): boolean {
 
   // If no PostgreSQL database is configured, keep in-memory store active
   // so that Vercel preview deployments work out of the box with zero setup.
-  if (!process.env.DATABASE_URL) {
+  if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL && !process.env.POSTGRES_PRISMA_URL) {
     return true;
   }
 
