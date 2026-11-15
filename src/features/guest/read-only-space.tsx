@@ -136,8 +136,8 @@ export function ReadOnlyGradeFeed({
       </section>
 
       <div className="mt-8 grid gap-4">
-        {posts.map((post) => (
-          <article className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-[0_10px_30px_rgba(31,68,100,0.06)] sm:p-7" key={post.title}>
+        {posts.map((post, index) => (
+          <article className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-[0_10px_30px_rgba(31,68,100,0.06)] sm:p-7" key={`${post.title}-${index}`}>
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex gap-4">
                 <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8f5f8] text-[var(--brand)]"><FileText aria-hidden="true" size={22} /></div>

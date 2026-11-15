@@ -83,7 +83,7 @@ const demoAccounts: readonly DemoAccount[] = [
     // Local-preview access code only. It is Argon2id hashed and is never used
     // by the production adapter.
     passwordHash:
-      "$argon2id$v=19$m=19456,t=2,p=1$jj0hYMFhL+WtMEplV4hkjA$hBys/vMeaCcvLaA0Xdeo1LuXlHW7T2uvJ8vwd0ekfz0",
+      "$argon2id$v=19$m=19456,t=2,p=1$ZWslG2eorA+RThu+33hvOg$E/5wITWi8iMEIj7n/pctzYqzw+UVdCRa5cYAtcU8w/o",
     isActive: true,
     mustChangePassword: false,
     failedLoginAttempts: 0,

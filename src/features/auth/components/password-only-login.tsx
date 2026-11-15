@@ -10,6 +10,7 @@ interface AccessProfile {
   readonly title: string;
   readonly description: string;
   readonly identifier: string;
+  readonly demoPassword: string;
   readonly icon: ReactNode;
 }
 
@@ -18,12 +19,14 @@ const accessProfiles: Record<PrivilegedAccessRole, AccessProfile> = {
     title: "Espace enseignant",
     description: "Entrez le mot de passe de votre accès enseignant pour gérer vos publications.",
     identifier: "teacher@demo.intila9a.local",
+    demoPassword: "Demo!Teacher2026",
     icon: <KeyRound aria-hidden="true" size={24} strokeWidth={2.2} />,
   },
   DIRECTOR: {
     title: "Espace Direction",
     description: "Entrez le mot de passe de votre accès Direction pour administrer l’établissement.",
     identifier: "director@demo.intila9a.local",
+    demoPassword: "Demo!Director2026",
     icon: <ShieldCheck aria-hidden="true" size={24} strokeWidth={2.2} />,
   },
 };
@@ -123,6 +126,20 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
           </button>
         </span>
       </label>
+
+      <div className="mt-3 flex items-center justify-between text-xs text-[var(--muted)]">
+        <span>Code démo : <code className="rounded bg-[#eef4f8] px-1.5 py-0.5 font-mono font-medium text-[var(--ink)]">{profile.demoPassword}</code></span>
+        <button
+          className="font-bold text-[var(--brand)] underline-offset-4 hover:underline"
+          onClick={() => {
+            setPassword(profile.demoPassword);
+            setError(null);
+          }}
+          type="button"
+        >
+          Remplir
+        </button>
+      </div>
 
       {error ? <p aria-live="polite" className="mt-5 rounded-xl bg-[#fff0ee] px-4 py-3 text-sm font-medium text-[var(--danger)]" role="alert">{error}</p> : null}
 

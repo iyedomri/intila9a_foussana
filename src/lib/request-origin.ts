@@ -1,7 +1,11 @@
 import type { NextRequest } from "next/server";
 
 function expectedHost(request: NextRequest): string | null {
-  return request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    return forwardedHost.split(",")[0]?.trim() ?? null;
+  }
+  return request.headers.get("host");
 }
 
 function expectedProtocol(request: NextRequest): string {
@@ -13,7 +17,7 @@ function isArenaDevelopmentPreview(origin: URL): boolean {
   return (
     process.env.NODE_ENV !== "production" &&
     origin.protocol === "https:" &&
-    /^\d+-[a-z0-9]+\.e2b\.app$/i.test(origin.host)
+    (origin.host.endsWith(".e2b.app") || /^\d+-[a-z0-9-]+\.e2b\.app$/i.test(origin.host))
   );
 }
 

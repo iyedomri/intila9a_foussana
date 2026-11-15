@@ -22,12 +22,23 @@ Then open `http://localhost:3000` (or use the Arena Live Preview).
 
 ## What to test
 
-1. Select Student or Parent, choose a grade from 1st to 6th, and review the
-   read-only example posts/download.
-2. Select Teacher, enter the local teacher access code, then create a post with
-   a name, subject, grade, exercise/exam/lesson type, title, and description.
-3. Visit that grade in the read-only Student or Parent view to see the local
-   preview post.
+1. **Student / Parent spaces** (`/student-space`, `/parent-space`):
+   Choose a grade from 1st to 6th, and review the read-only example posts and download documents.
+2. **Teacher space** (`/teacher-access`):
+   Enter the local teacher access code (`Demo!Teacher2026` or click **Remplir**), then create a post with your name, subject, grade (1st–6th), type (exercise, exam, lesson), title, and description.
+3. **Verify publication**:
+   Visit that grade in the read-only Student or Parent view to see your newly published post appear immediately in the feed.
+4. **Director space** (`/director-access`):
+   Enter the local director access code (`Demo!Director2026` or click **Remplir**) to access the administration dashboard.
+
+## Demo credentials
+
+| Role | Access URL | Identifier / Account | Password / Code |
+| :--- | :--- | :--- | :--- |
+| **Teacher (Enseignant)** | `/teacher-access` | `teacher@demo.intila9a.local` | `Demo!Teacher2026` |
+| **Director (Direction)** | `/director-access` | `director@demo.intila9a.local` | `Demo!Director2026` |
+| **Student (Élève)** | `/student-space` (or `/login`) | `student@demo.intila9a.local` | `Demo!Student2026` |
+| **Parent (Parent)** | `/parent-space` (or `/login`) | `parent@demo.intila9a.local` | `Demo!Parent2026` |
 
 Posts in this visual demo are kept in memory and reset whenever the development
 server restarts.
