@@ -12,7 +12,7 @@ Ce dossier contient la configuration, les scripts d’initialisation et les guid
   - Identifiants reconnus : `directeur@ecole-foussana.tn`, `fethi.omri@ecole-foussana.tn`, ou `director@demo.intila9a.local`
   - Mot de passe : Code secret confidentiel (haché avec Argon2id — jamais stocké en clair) ou configurable via la variable d'environnement `DIRECTOR_PASSWORD`.
 - **Comptes Enseignants** :
-  - Mot de passe d'accès professionnel : `intila9a2026`
+  - Mot de passe d'accès professionnel : `intila9a2027` (ou `intila9a2026`)
   - Les enseignants publient leurs cours, exercices, devoirs et examens avec pièces jointes PDF (jusqu'à 15 Mo).
 - **Espaces Élèves et Parents** :
   - Classes réinitialisées et vidées de toute fausse donnée de démonstration.

@@ -31,7 +31,7 @@ VALUES (
 )
 ON CONFLICT (email) DO NOTHING;
 
--- 3. Compte Enseignant (Mot de passe intila9a2026 haché Argon2id)
+-- 3. Compte Enseignant (Mot de passe intila9a2027 haché Argon2id)
 INSERT INTO users (
   id, role, first_name, last_name, email, password_hash, is_active, must_change_password, created_at, updated_at
 )
@@ -41,7 +41,7 @@ VALUES (
   'Nour',
   'Trabelsi',
   'enseignant@ecole-foussana.tn',
-  '$argon2id$v=19$m=65536,t=3,p=4$KI5Co9FDbUdezgKlxMvzuA$U72telUA6Lh+/QRqqiDesvMF+NkhP+d0G3aU9D4NYwU',
+  '$argon2id$v=19$m=65536,t=3,p=4$erbBrf9jSevqt4+QoLYORw$vgJR+xGoD19KF8zjhs1+pSC0IJy3pYh7FUrKTYgn2t0',
   true,
   false,
   NOW(),

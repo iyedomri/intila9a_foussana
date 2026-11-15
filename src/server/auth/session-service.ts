@@ -16,11 +16,21 @@ import type { AuthenticatedSession, LoginAttemptResult, UserRole } from "./types
 export const SESSION_COOKIE_NAME = "if_session";
 
 export function isDemoModeEnabled(): boolean {
+  if (process.env.DISABLE_DEMO_MODE === "true") {
+    return false;
+  }
+
   if (
     process.env.ENABLE_DEMO_MODE === "true" ||
     process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
     process.env.APP_MODE === "demo"
   ) {
+    return true;
+  }
+
+  // If no PostgreSQL database is configured, keep in-memory store active
+  // so that Vercel preview deployments work out of the box with zero setup.
+  if (!process.env.DATABASE_URL) {
     return true;
   }
 

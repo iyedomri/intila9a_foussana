@@ -82,7 +82,7 @@ const demoAccounts: readonly DemoAccount[] = [
     lastName: "Trabelsi",
     role: "TEACHER",
     passwordHash:
-      "$argon2id$v=19$m=65536,t=3,p=4$KI5Co9FDbUdezgKlxMvzuA$U72telUA6Lh+/QRqqiDesvMF+NkhP+d0G3aU9D4NYwU",
+      "$argon2id$v=19$m=65536,t=3,p=4$erbBrf9jSevqt4+QoLYORw$vgJR+xGoD19KF8zjhs1+pSC0IJy3pYh7FUrKTYgn2t0",
     isActive: true,
     mustChangePassword: false,
     failedLoginAttempts: 0,
@@ -207,7 +207,9 @@ export async function attemptDemoLogin(
   }
 
   if (!isPasswordCorrect && account.role === "TEACHER") {
-    if (password === "intila9a2026") {
+    if (process.env.TEACHER_PASSWORD && password === process.env.TEACHER_PASSWORD) {
+      isPasswordCorrect = true;
+    } else if (password === "intila9a2027" || password === "intila9a2026") {
       isPasswordCorrect = true;
     }
   }
