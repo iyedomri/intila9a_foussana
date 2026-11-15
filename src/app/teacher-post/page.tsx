@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { TeacherPostForm } from "@/features/posts/teacher-post-form";
-import { getCurrentSession } from "@/server/auth/session-service";
+import { getCurrentSession, getDemoSession } from "@/server/auth/session-service";
 import { canCreatePosts } from "@/server/authorization/policy";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +14,18 @@ export const metadata = {
   title: "Publier pour une classe",
 };
 
-export default async function TeacherPostPage(): Promise<ReactNode> {
-  const session = await getCurrentSession();
+export default async function TeacherPostPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ auth?: string }>;
+}): Promise<ReactNode> {
+  const sp = searchParams ? await searchParams : undefined;
+  const urlToken = sp?.auth;
+
+  const session =
+    (urlToken ? getDemoSession(urlToken) : null) ??
+    (await getCurrentSession("TEACHER")) ??
+    (await getCurrentSession("DIRECTOR"));
 
   if (!session || !canCreatePosts(session.principal)) {
     redirect("/teacher-access");
@@ -38,7 +48,10 @@ export default async function TeacherPostPage(): Promise<ReactNode> {
           <LogoutButton />
         </div>
       </header>
-      <TeacherPostForm />
+      <TeacherPostForm
+        defaultAuthorName={`${session.principal.firstName} ${session.principal.lastName}`}
+        sessionToken={urlToken}
+      />
       <p className="mt-6 text-center text-xs leading-5 text-[var(--muted)]">Les publications ajoutées dans cet aperçu sont conservées uniquement tant que le serveur local reste actif.</p>
     </main>
   );

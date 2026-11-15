@@ -49,6 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     {
       data: {
         user: attempt.result.session.principal,
+        token: attempt.result.token,
         mustChangePassword: attempt.result.session.principal.mustChangePassword,
       },
     },

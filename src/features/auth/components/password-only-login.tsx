@@ -35,6 +35,10 @@ interface CsrfResponse {
 }
 
 interface LoginResponse {
+  readonly data?: {
+    readonly user?: unknown;
+    readonly token?: string;
+  };
   readonly error?: { readonly message?: string };
 }
 
@@ -83,7 +87,19 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
         return;
       }
 
-      const targetPath = role === "TEACHER" ? "/teacher-post" : "/dashboard";
+      const token = body.data?.token;
+      if (token && typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem("intila9a_demo_session", token);
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      const targetBase = role === "TEACHER" ? "/teacher-post" : "/dashboard";
+      const targetPath = token
+        ? `${targetBase}?auth=${encodeURIComponent(token)}`
+        : targetBase;
       window.location.assign(targetPath);
     } catch {
       setError("La connexion sécurisée est indisponible. Réessayez.");

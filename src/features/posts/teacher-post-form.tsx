@@ -34,8 +34,14 @@ async function requestCsrfToken(): Promise<string> {
   return body.data.token;
 }
 
-export function TeacherPostForm(): ReactNode {
-  const [authorName, setAuthorName] = useState("");
+export function TeacherPostForm({
+  defaultAuthorName = "",
+  sessionToken,
+}: Readonly<{
+  defaultAuthorName?: string;
+  sessionToken?: string;
+}> = {}): ReactNode {
+  const [authorName, setAuthorName] = useState(defaultAuthorName);
   const [subject, setSubject] = useState("");
   const [grade, setGrade] = useState("1");
   const [type, setType] = useState("EXERCISE");
@@ -53,12 +59,29 @@ export function TeacherPostForm(): ReactNode {
 
     try {
       const csrfToken = await requestCsrfToken();
-      const response = await fetch("/api/v1/posts", {
+      let token = sessionToken;
+      if (!token && typeof window !== "undefined") {
+        try {
+          token =
+            sessionStorage.getItem("intila9a_demo_session") ??
+            new URLSearchParams(window.location.search).get("auth") ??
+            undefined;
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      const url = token
+        ? `/api/v1/posts?auth=${encodeURIComponent(token)}`
+        : "/api/v1/posts";
+
+      const response = await fetch(url, {
         method: "POST",
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": csrfToken,
+          ...(token ? { "X-Session-Token": token } : {}),
         },
         body: JSON.stringify({
           authorName,

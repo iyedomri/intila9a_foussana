@@ -52,6 +52,7 @@ interface DemoAuthState {
   readonly accounts: Map<string, DemoAccount>;
   readonly sessions: Map<string, StoredSession>;
   readonly passwordResets: Map<string, StoredPasswordReset>;
+  readonly lastSessionByRole: Map<UserRole, string>;
 }
 
 declare global {
@@ -131,6 +132,7 @@ function createState(): DemoAuthState {
     accounts,
     sessions: new Map<string, StoredSession>(),
     passwordResets: new Map<string, StoredPasswordReset>(),
+    lastSessionByRole: new Map<UserRole, string>(),
   };
 }
 
@@ -220,6 +222,7 @@ export async function attemptDemoLogin(
   };
 
   state.sessions.set(storedSession.tokenHash, storedSession);
+  state.lastSessionByRole.set(account.role, storedSession.tokenHash);
 
   return {
     ok: true,
@@ -255,6 +258,38 @@ export function getDemoSession(token: string | undefined): AuthenticatedSession 
 
   if (!account || !account.isActive || account.sessionVersion !== session.sessionVersion) {
     state.sessions.delete(tokenHash);
+    return null;
+  }
+
+  session.lastSeenAt = now;
+  session.idleExpiresAt = new Date(Math.min(now.getTime() + IDLE_TIMEOUT_MS, session.expiresAt.getTime()));
+
+  return {
+    id: session.id,
+    expiresAt: session.expiresAt,
+    idleExpiresAt: session.idleExpiresAt,
+    principal: toPrincipal(account),
+  };
+}
+
+export function getLatestDemoSessionForRole(role: UserRole): AuthenticatedSession | null {
+  const state = getState();
+  const tokenHash = state.lastSessionByRole.get(role);
+
+  if (!tokenHash) {
+    return null;
+  }
+
+  const session = state.sessions.get(tokenHash);
+  const now = new Date();
+
+  if (!session || session.revokedAt || session.expiresAt <= now || session.idleExpiresAt <= now) {
+    return null;
+  }
+
+  const account = [...state.accounts.values()].find((candidate) => candidate.id === session.userId);
+
+  if (!account || !account.isActive || account.sessionVersion !== session.sessionVersion) {
     return null;
   }
 

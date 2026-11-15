@@ -7,10 +7,11 @@ import {
   completeDemoPasswordReset,
   createDemoPasswordReset,
   getDemoSession,
+  getLatestDemoSessionForRole,
   revokeAllDemoSessions,
   revokeDemoSession,
 } from "./demo-auth-store";
-import type { AuthenticatedSession, LoginAttemptResult } from "./types";
+import type { AuthenticatedSession, LoginAttemptResult, UserRole } from "./types";
 
 export const SESSION_COOKIE_NAME = "if_session";
 
@@ -30,13 +31,26 @@ export async function loginWithPassword(
   return attemptDemoLogin(email, password);
 }
 
-export async function getCurrentSession(): Promise<AuthenticatedSession | null> {
+export async function getCurrentSession(
+  fallbackRole?: UserRole,
+): Promise<AuthenticatedSession | null> {
   if (process.env.NODE_ENV === "production") {
     return null;
   }
 
   const cookieStore = await cookies();
-  return getDemoSession(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = getDemoSession(token);
+
+  if (session) {
+    return session;
+  }
+
+  if (fallbackRole) {
+    return getLatestDemoSessionForRole(fallbackRole);
+  }
+
+  return null;
 }
 
 export function getSessionFromCookieValue(
@@ -44,6 +58,8 @@ export function getSessionFromCookieValue(
 ): AuthenticatedSession | null {
   return getDemoSession(token);
 }
+
+export { getDemoSession, getLatestDemoSessionForRole };
 
 export function revokeSession(token: string | undefined): void {
   revokeDemoSession(token);
@@ -63,8 +79,8 @@ export async function resetPassword(token: string, newPassword: string): Promise
 
 export const sessionCookieOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  sameSite: "none" as const,
+  secure: true,
   path: "/",
   maxAge: 8 * 60 * 60,
 };

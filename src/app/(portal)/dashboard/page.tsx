@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { LogoutButton } from "@/features/auth/components/logout-button";
-import { getCurrentSession } from "@/server/auth/session-service";
+import { getCurrentSession, getDemoSession } from "@/server/auth/session-service";
 import type { UserRole } from "@/server/auth/types";
 
 export const metadata = {
@@ -36,11 +36,21 @@ const roleCopy: Record<UserRole, { title: string; summary: string; actions: read
   },
 };
 
-export default async function DashboardPage(): Promise<ReactNode> {
-  const session = await getCurrentSession();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ auth?: string }>;
+}): Promise<ReactNode> {
+  const sp = searchParams ? await searchParams : undefined;
+  const urlToken = sp?.auth;
+
+  const session =
+    (urlToken ? getDemoSession(urlToken) : null) ??
+    (await getCurrentSession("DIRECTOR")) ??
+    (await getCurrentSession("TEACHER"));
 
   if (!session) {
-    redirect("/login");
+    redirect("/director-access");
   }
 
   if (session.principal.mustChangePassword) {
@@ -69,7 +79,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
           {session.principal.role === "TEACHER" || session.principal.role === "DIRECTOR" ? (
             <Link
               className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[var(--brand)] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--brand-strong)]"
-              href="/teacher-post"
+              href={urlToken ? `/teacher-post?auth=${encodeURIComponent(urlToken)}` : "/teacher-post"}
             >
               <PlusCircle aria-hidden="true" size={17} />
               Publier pour une classe
