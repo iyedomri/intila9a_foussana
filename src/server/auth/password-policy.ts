@@ -15,7 +15,7 @@ export const passwordSchema = z
   .refine((value) => hasSymbol.test(value), "PASSWORD_NEEDS_SYMBOL");
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email().max(320),
+  email: z.string().trim().toLowerCase().min(1, "REQUIRED").max(320),
   password: z.string().min(1).max(128),
 });
 
