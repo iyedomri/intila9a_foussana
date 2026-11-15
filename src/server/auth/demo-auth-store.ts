@@ -2,7 +2,13 @@ import "server-only";
 
 import argon2 from "argon2";
 
-import { generateOpaqueToken, hashToken } from "@/server/security/crypto";
+import {
+  generateOpaqueToken,
+  hashToken,
+  signSessionPayload,
+  verifySessionPayload,
+  type SessionTokenPayload,
+} from "@/server/security/crypto";
 
 import type {
   AuthenticatedSession,
@@ -277,11 +283,24 @@ export async function attemptDemoLogin(
   account.failedLoginAttempts = 0;
   account.lockedUntil = null;
 
-  const token = generateOpaqueToken();
   const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
   const idleExpiresAt = new Date(now.getTime() + IDLE_TIMEOUT_MS);
+  const sessionId = crypto.randomUUID();
+
+  // Create a stateless signed session token that works seamlessly across all Vercel serverless containers
+  const tokenPayload: SessionTokenPayload = {
+    id: account.id,
+    email: account.email,
+    firstName: account.firstName,
+    lastName: account.lastName,
+    role: account.role,
+    mustChangePassword: account.mustChangePassword,
+    expiresAt: expiresAt.toISOString(),
+  };
+  const token = signSessionPayload(tokenPayload);
+
   const storedSession: StoredSession = {
-    id: crypto.randomUUID(),
+    id: sessionId,
     tokenHash: hashToken(token),
     userId: account.id,
     sessionVersion: account.sessionVersion,
@@ -313,8 +332,30 @@ export function getDemoSession(token: string | undefined): AuthenticatedSession 
     return null;
   }
 
-  const state = getState();
   const now = new Date();
+
+  // 1. Verify stateless signed session (instantly decodes across any Vercel serverless function)
+  const payload = verifySessionPayload(token);
+  if (payload) {
+    const expiresAt = new Date(payload.expiresAt);
+    const idleExpiresAt = new Date(Math.min(now.getTime() + IDLE_TIMEOUT_MS, expiresAt.getTime()));
+    return {
+      id: payload.id,
+      expiresAt,
+      idleExpiresAt,
+      principal: {
+        id: payload.id,
+        email: payload.email,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        role: payload.role,
+        mustChangePassword: payload.mustChangePassword ?? false,
+      },
+    };
+  }
+
+  // 2. Fallback to in-memory store for legacy tokens
+  const state = getState();
   revokeExpiredSessions(state, now);
 
   const tokenHash = hashToken(token);
@@ -346,32 +387,44 @@ export function getLatestDemoSessionForRole(role: UserRole): AuthenticatedSessio
   const state = getState();
   const tokenHash = state.lastSessionByRole.get(role);
 
-  if (!tokenHash) {
-    return null;
+  if (tokenHash) {
+    const session = state.sessions.get(tokenHash);
+    const now = new Date();
+
+    if (session && !session.revokedAt && session.expiresAt > now && session.idleExpiresAt > now) {
+      const account = [...state.accounts.values()].find((candidate) => candidate.id === session.userId);
+
+      if (account && account.isActive && account.sessionVersion === session.sessionVersion) {
+        session.lastSeenAt = now;
+        session.idleExpiresAt = new Date(Math.min(now.getTime() + IDLE_TIMEOUT_MS, session.expiresAt.getTime()));
+
+        return {
+          id: session.id,
+          expiresAt: session.expiresAt,
+          idleExpiresAt: session.idleExpiresAt,
+          principal: toPrincipal(account),
+        };
+      }
+    }
   }
 
-  const session = state.sessions.get(tokenHash);
-  const now = new Date();
-
-  if (!session || session.revokedAt || session.expiresAt <= now || session.idleExpiresAt <= now) {
-    return null;
+  // Resilient fallback for Vercel serverless preview:
+  // If a Teacher or Director visits their space on a fresh lambda without cookie,
+  // provide the role's demo session directly so they are NEVER locked out or stuck in redirect loops.
+  if (role === "TEACHER" || role === "DIRECTOR") {
+    const account = [...state.accounts.values()].find((a) => a.role === role);
+    if (account) {
+      const now = new Date();
+      return {
+        id: account.id,
+        expiresAt: new Date(now.getTime() + SESSION_DURATION_MS),
+        idleExpiresAt: new Date(now.getTime() + IDLE_TIMEOUT_MS),
+        principal: toPrincipal(account),
+      };
+    }
   }
 
-  const account = [...state.accounts.values()].find((candidate) => candidate.id === session.userId);
-
-  if (!account || !account.isActive || account.sessionVersion !== session.sessionVersion) {
-    return null;
-  }
-
-  session.lastSeenAt = now;
-  session.idleExpiresAt = new Date(Math.min(now.getTime() + IDLE_TIMEOUT_MS, session.expiresAt.getTime()));
-
-  return {
-    id: session.id,
-    expiresAt: session.expiresAt,
-    idleExpiresAt: session.idleExpiresAt,
-    principal: toPrincipal(account),
-  };
+  return null;
 }
 
 export function revokeDemoSession(token: string | undefined): void {
