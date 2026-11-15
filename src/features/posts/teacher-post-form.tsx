@@ -58,7 +58,7 @@ export function TeacherPostForm({
 }: Readonly<{
   defaultAuthorName?: string;
   defaultSubject?: string;
-  defaultAudience?: "ALL" | "STUDENTS" | "PARENTS";
+  defaultAudience?: "ALL" | "STUDENTS" | "PARENTS" | "TEACHERS";
   allowSchoolWide?: boolean;
   sessionToken?: string;
   onPostCreated?: () => void;
@@ -66,7 +66,7 @@ export function TeacherPostForm({
   const [authorName, setAuthorName] = useState(defaultAuthorName);
   const [subject, setSubject] = useState(defaultSubject);
   const [grade, setGrade] = useState(allowSchoolWide ? "0" : "1");
-  const [audience, setAudience] = useState<"ALL" | "STUDENTS" | "PARENTS">(defaultAudience);
+  const [audience, setAudience] = useState<"ALL" | "STUDENTS" | "PARENTS" | "TEACHERS">(defaultAudience);
   const [type, setType] = useState("EXERCISE");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -197,8 +197,9 @@ export function TeacherPostForm({
           </select>
         </Field>
         <Field label="Public visé" htmlFor="post-audience">
-          <select className="field" id="post-audience" onChange={(event) => setAudience(event.target.value as "ALL" | "STUDENTS" | "PARENTS")} value={audience}>
+          <select className="field" id="post-audience" onChange={(event) => setAudience(event.target.value as "ALL" | "STUDENTS" | "PARENTS" | "TEACHERS")} value={audience}>
             <option value="ALL">👥 Toute la communauté (Élèves & Parents)</option>
+            <option value="TEACHERS">👨‍🏫 Enseignants uniquement (Conseils, Réunions, Notes de service)</option>
             <option value="STUDENTS">🎒 Élèves uniquement</option>
             <option value="PARENTS">👨‍👩‍👧 Parents uniquement</option>
           </select>

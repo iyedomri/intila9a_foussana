@@ -58,6 +58,8 @@ function formatFileSize(bytes?: number): string {
 
 function audienceLabel(audience?: DemoPostAudience): string {
   switch (audience) {
+    case "TEACHERS":
+      return "👨‍🏫 Enseignants uniquement";
     case "STUDENTS":
       return "🎒 Élèves uniquement";
     case "PARENTS":
@@ -433,6 +435,7 @@ export function DirectorDashboard({
                   value={audienceFilter}
                 >
                   <option value="ALL">👥 Tous les publics</option>
+                  <option value="TEACHERS">👨‍🏫 Enseignants uniquement</option>
                   <option value="STUDENTS">🎒 Élèves uniquement</option>
                   <option value="PARENTS">👨‍👩‍👧 Parents uniquement</option>
                 </select>
