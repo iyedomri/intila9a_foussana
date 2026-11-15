@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DIRECTOR
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum PostType {
+  EXERCISE
+  EXAM
+  LESSON_NOTE
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EventAudience {
+  TEACHERS
+  STUDENTS_AND_PARENTS
+  ALL
+}
+
+enum FileScanStatus {
+  PENDING
+  CLEAN
+  REJECTED
+}
+
+enum NotificationType {
+  POST_PUBLISHED
+  POST_UPDATED
+  EVENT_PUBLISHED
+  MODERATION
+  ACCOUNT
+}
+
+model User {
+  id                         String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role                       Role
+  firstName                  String               @map("first_name") @db.VarChar(100)
+  lastName                   String               @map("last_name") @db.VarChar(100)
+  email                      String               @unique @db.VarChar(320)
+  username                   String?              @unique @db.VarChar(64)
+  passwordHash               String               @map("password_hash") @db.VarChar(255)
+  isActive                   Boolean              @default(true) @map("is_active")
+  mustChangePassword         Boolean              @default(true) @map("must_change_password")
+  failedLoginAttempts        Int                  @default(0) @map("failed_login_attempts")
+  loginLockedUntil           DateTime?            @map("login_locked_until") @db.Timestamptz(3)
+  lastLoginAt                DateTime?            @map("last_login_at") @db.Timestamptz(3)
+  sessionVersion             Int                  @default(0) @map("session_version")
+  totpSecretEncrypted        String?              @map("totp_secret_encrypted") @db.Text
+  totpEnabledAt              DateTime?            @map("totp_enabled_at") @db.Timestamptz(3)
+  createdAt                  DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  teacherAssignments         TeacherAssignment[]  @relation("TeacherAssignments")
+  studentProfile             StudentProfile?      @relation("StudentProfile")
+  parentLinks                ParentStudent[]      @relation("ParentStudentParent")
+  childLinks                 ParentStudent[]      @relation("ParentStudentChild")
+  authoredPosts              Post[]               @relation("PostAuthor")
+  deletedPosts               Post[]               @relation("PostDeleter")
+  authoredEvents             Event[]              @relation("EventAuthor")
+  deletedEvents              Event[]              @relation("EventDeleter")
+  notifications              Notification[]
+  auditLogs                  AuditLog[]           @relation("AuditActor")
+  passwordResetTokens        PasswordResetToken[]
+  sessions                   Session[]
+
+  @@index([role, isActive])
+  @@map("users")
+}
+
+model Grade {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  level         Int           @unique @db.SmallInt
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  classes       SchoolClass[]
+  assignments   TeacherAssignment[]
+  posts         Post[]
+  events        Event[]
+
+  @@map("grades")
+}
+
+model SchoolClass {
+  id             String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gradeId        String               @map("grade_id") @db.Uuid
+  name           String               @db.VarChar(24)
+  isActive       Boolean              @default(true) @map("is_active")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  grade          Grade                @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  assignments    TeacherAssignment[]
+  studentProfiles StudentProfile[]
+  posts          Post[]
+
+  @@unique([gradeId, name])
+  @@index([gradeId, isActive])
+  @@map("school_classes")
+}
+
+model Subject {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String              @unique @db.VarChar(80)
+  isActive    Boolean             @default(true) @map("is_active")
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  assignments TeacherAssignment[]
+  posts       Post[]
+
+  @@map("subjects")
+}
+
+model TeacherAssignment {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  teacherId String       @map("teacher_id") @db.Uuid
+  gradeId   String       @map("grade_id") @db.Uuid
+  classId   String?      @map("class_id") @db.Uuid
+  subjectId String       @map("subject_id") @db.Uuid
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  teacher   User         @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Restrict)
+  grade     Grade        @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  schoolClass SchoolClass? @relation(fields: [classId], references: [id], onDelete: Restrict)
+  subject   Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@index([teacherId, gradeId, subjectId])
+  @@index([classId])
+  @@map("teacher_assignments")
+}
+
+model StudentProfile {
+  userId    String      @id @map("user_id") @db.Uuid
+  classId   String      @map("class_id") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User        @relation("StudentProfile", fields: [userId], references: [id], onDelete: Restrict)
+  schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Restrict)
+
+  @@index([classId])
+  @@map("student_profiles")
+}
+
+model ParentStudent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentId  String   @map("parent_id") @db.Uuid
+  studentId String   @map("student_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  parent    User     @relation("ParentStudentParent", fields: [parentId], references: [id], onDelete: Restrict)
+  student   User     @relation("ParentStudentChild", fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([parentId, studentId])
+  @@index([studentId])
+  @@map("parent_students")
+}
+
+model Post {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId     String        @map("author_id") @db.Uuid
+  type         PostType
+  title        String        @db.VarChar(160)
+  description  String        @db.Text
+  subjectId    String        @map("subject_id") @db.Uuid
+  gradeId      String        @map("grade_id") @db.Uuid
+  classId      String?       @map("class_id") @db.Uuid
+  dueDate      DateTime?     @map("due_date") @db.Timestamptz(3)
+  status       PostStatus    @default(DRAFT)
+  deletedAt    DateTime?     @map("deleted_at") @db.Timestamptz(3)
+  deletedById  String?       @map("deleted_by_id") @db.Uuid
+  deleteReason String?       @map("delete_reason") @db.VarChar(500)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  author       User          @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  subject      Subject       @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  grade        Grade         @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  schoolClass  SchoolClass?  @relation(fields: [classId], references: [id], onDelete: Restrict)
+  deletedBy    User?         @relation("PostDeleter", fields: [deletedById], references: [id], onDelete: Restrict)
+  files        PostFile[]
+
+  @@index([authorId, createdAt])
+  @@index([gradeId, classId, subjectId, type, dueDate])
+  @@index([deletedAt, status, createdAt])
+  @@map("posts")
+}
+
+model PostFile {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId       String         @map("post_id") @db.Uuid
+  storageKey   String         @unique @map("storage_key") @db.VarChar(512)
+  mimeType     String         @map("mime_type") @db.VarChar(127)
+  size         Int            @db.Integer
+  originalName String         @map("original_name") @db.VarChar(255)
+  scanStatus   FileScanStatus @default(PENDING) @map("scan_status")
+  scannedAt    DateTime?      @map("scanned_at") @db.Timestamptz(3)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  post         Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, scanStatus])
+  @@map("post_files")
+}
+
+model Event {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId     String        @map("author_id") @db.Uuid
+  title        String        @db.VarChar(160)
+  description  String        @db.Text
+  startsAt     DateTime      @map("starts_at") @db.Timestamptz(3)
+  endsAt       DateTime      @map("ends_at") @db.Timestamptz(3)
+  audience     EventAudience
+  gradeId      String?       @map("grade_id") @db.Uuid
+  deletedAt    DateTime?     @map("deleted_at") @db.Timestamptz(3)
+  deletedById  String?       @map("deleted_by_id") @db.Uuid
+  deleteReason String?       @map("delete_reason") @db.VarChar(500)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  author       User          @relation("EventAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  grade        Grade?        @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  deletedBy    User?         @relation("EventDeleter", fields: [deletedById], references: [id], onDelete: Restrict)
+
+  @@index([audience, gradeId, startsAt])
+  @@index([deletedAt, startsAt])
+  @@map("events")
+}
+
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  refId     String           @map("ref_id") @db.Uuid
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  action    String   @db.VarChar(80)
+  entity    String   @db.VarChar(80)
+  entityId  String   @map("entity_id") @db.Uuid
+  ip        String?  @db.Inet
+  userAgent String?  @map("user_agent") @db.VarChar(512)
+  metadata  Json?    @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  actor     User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId, createdAt])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model Session {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash") @db.Char(64)
+  sessionVersion Int     @map("session_version")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(3)
+  idleExpiresAt DateTime @map("idle_expires_at") @db.Timestamptz(3)
+  lastSeenAt   DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  ip           String?   @db.Inet
+  userAgent    String?   @map("user_agent") @db.VarChar(512)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(3)
+  revokeReason String?   @map("revoke_reason") @db.VarChar(100)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([expiresAt])
+  @@map("sessions")
+}

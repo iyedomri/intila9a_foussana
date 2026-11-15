@@ -1,0 +1,35 @@
+# Dependencies and framework output
+node_modules/
+.next/
+next-env.d.ts
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local development service data
+postgres-data/
+minio-data/
+
+# Generated Prisma client artifacts
+prisma/generated/
+
+# OS/editor files
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# TypeScript incremental build state
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*

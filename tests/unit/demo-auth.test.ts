@@ -1,0 +1,58 @@
+import { describe, expect, it } from "vitest";
+
+import { attemptDemoLogin } from "../../src/server/auth/demo-auth-store";
+
+describe("authentication store credentials", () => {
+  it("authenticates teacher with intila9a2026", async () => {
+    const result = await attemptDemoLogin(
+      "teacher@demo.intila9a.local",
+      "intila9a2026",
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.result.session.principal.role).toBe("TEACHER");
+      expect(result.result.session.principal.email).toBe("teacher@demo.intila9a.local");
+    }
+  });
+
+  it("authenticates director Fethi Omri with secret code", async () => {
+    const result = await attemptDemoLogin(
+      "director@demo.intila9a.local",
+      "fethi****",
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.result.session.principal.role).toBe("DIRECTOR");
+      expect(result.result.session.principal.firstName).toBe("Fethi");
+      expect(result.result.session.principal.lastName).toBe("Omri");
+    }
+
+    const aliasResult = await attemptDemoLogin(
+      "fethi.omri@ecole-foussana.tn",
+      "fethi****",
+    );
+    expect(aliasResult.ok).toBe(true);
+  });
+
+  it("authenticates student and parent demo accounts", async () => {
+    const student = await attemptDemoLogin(
+      "student@demo.intila9a.local",
+      "Demo!Student2026",
+    );
+    expect(student.ok).toBe(true);
+
+    const parent = await attemptDemoLogin(
+      "parent@demo.intila9a.local",
+      "Demo!Parent2026",
+    );
+    expect(parent.ok).toBe(true);
+  });
+
+  it("rejects invalid passwords", async () => {
+    const wrong = await attemptDemoLogin(
+      "teacher@demo.intila9a.local",
+      "WrongPassword123!",
+    );
+    expect(wrong.ok).toBe(false);
+  });
+});
