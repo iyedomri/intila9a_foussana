@@ -25,9 +25,9 @@ Then open `http://localhost:3000` (or use the Arena Live Preview).
 1. **Student / Parent spaces** (`/student-space`, `/parent-space`):
    Choose a grade from 1st to 6th, and review the read-only example posts and download documents.
 2. **Teacher space** (`/teacher-access`):
-   Enter the local teacher access code (`Demo!Teacher2026` or click **Remplir**), then create a post with your name, subject, grade (1st–6th), type (exercise, exam, lesson), title, and description.
-3. **Verify publication**:
-   Visit that grade in the read-only Student or Parent view to see your newly published post appear immediately in the feed.
+   Enter the local teacher access code (`Demo!Teacher2026` or click **Remplir**), then create a post with your name, subject, grade (1st–6th), type (exercise, exam, lesson), title, description, and **attach a lesson PDF document** (max 15 MB).
+3. **Verify publication & PDF download**:
+   Visit that grade in the read-only Student or Parent view to see your newly published post appear immediately in the feed with its attached PDF file badge, and click **Télécharger le PDF** to download your uploaded document.
 4. **Director space** (`/director-access`):
    Enter the local director access code (`Demo!Director2026` or click **Remplir**) to access the administration dashboard.
 

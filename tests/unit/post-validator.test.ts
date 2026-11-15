@@ -16,6 +16,32 @@ describe("teacher post validation", () => {
     expect(createPostSchema.safeParse(validPost).success).toBe(true);
   });
 
+  it("accepts a post with an attached PDF document", () => {
+    const postWithPdf = {
+      ...validPost,
+      file: {
+        fileName: "cours_fractions.pdf",
+        mimeType: "application/pdf",
+        size: 1024 * 50,
+        dataBase64: "JVBERi0xLjQKJeLjz9MKMSAwIG9ia...",
+      },
+    };
+    expect(createPostSchema.safeParse(postWithPdf).success).toBe(true);
+  });
+
+  it("rejects files exceeding size limits", () => {
+    const postWithBigFile = {
+      ...validPost,
+      file: {
+        fileName: "huge.pdf",
+        mimeType: "application/pdf",
+        size: 20 * 1024 * 1024, // 20 MB > 15 MB
+        dataBase64: "AAAA...",
+      },
+    };
+    expect(createPostSchema.safeParse(postWithBigFile).success).toBe(false);
+  });
+
   it("rejects unsupported grades and empty author data", () => {
     expect(createPostSchema.safeParse({ ...validPost, grade: 7 }).success).toBe(false);
     expect(createPostSchema.safeParse({ ...validPost, authorName: " " }).success).toBe(false);

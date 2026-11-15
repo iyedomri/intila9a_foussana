@@ -12,12 +12,24 @@ const grades = [1, 2, 3, 4, 5, 6] as const;
 type GradeLevel = (typeof grades)[number];
 
 interface PreviewPost {
+  readonly id?: string;
   readonly subject: string;
   readonly title: string;
   readonly type: "EXERCICE" | "EXAMEN" | "LEÇON";
   readonly due: string;
   readonly authorName?: string;
   readonly description?: string;
+  readonly file?: {
+    readonly fileName: string;
+    readonly size: number;
+    readonly downloadUrl: string;
+  };
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
 const gradePreviewPosts: Record<GradeLevel, readonly PreviewPost[]> = {
@@ -109,12 +121,20 @@ export function ReadOnlyGradeFeed({
 
   const grade = Number(gradeValue) as GradeLevel;
   const localPosts: readonly PreviewPost[] = listDemoPostsByGrade(grade).map((post) => ({
+    id: post.id,
     subject: post.subject,
     title: post.title,
     type: displayPostType(post.type),
     due: `Publié le ${post.createdAt.toLocaleDateString("fr-TN")}`,
     authorName: post.authorName,
     description: post.description,
+    file: post.file
+      ? {
+          fileName: post.file.fileName,
+          size: post.file.size,
+          downloadUrl: `/api/v1/posts/${post.id}/file`,
+        }
+      : undefined,
   }));
   const posts = [...localPosts, ...gradePreviewPosts[grade]];
   const prefix = audience === "Élève" ? "student-space" : "parent-space";
@@ -130,7 +150,7 @@ export function ReadOnlyGradeFeed({
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#39758a]">Espace {audience} · {grade}<sup>e</sup> année</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-[var(--ink)]">Publications de la classe</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--muted)]">Les enseignants publient les exercices, examens et notes de cours dans ce fil. Cet aperçu utilise uniquement des contenus génériques.</p>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--muted)]">Les enseignants publient les exercices, examens et notes de cours dans ce fil avec leurs documents PDF téléchargeables.</p>
         </div>
         <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white text-[var(--brand)] shadow-sm"><NotebookTabs aria-hidden="true" size={26} /></div>
       </section>
@@ -148,12 +168,27 @@ export function ReadOnlyGradeFeed({
                   </div>
                   <h2 className="mt-3 text-lg font-extrabold text-[var(--ink)]">{post.title}</h2>
                   {post.description ? <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{post.description}</p> : null}
+                  {post.file ? (
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#b2dde7] bg-[#f0f8fa] px-3 py-1.5 text-xs font-semibold text-[#176281]">
+                      <FileText aria-hidden="true" size={15} />
+                      <span className="font-bold">{post.file.fileName}</span>
+                      <span className="text-[#5b879c]">({formatFileSize(post.file.size)})</span>
+                    </div>
+                  ) : null}
                   <p className="mt-2 text-sm text-[var(--muted)]">{post.due}{post.authorName ? ` · ${post.authorName}` : ""}</p>
                 </div>
               </div>
-              <a className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#9ac9d5] px-4 text-sm font-bold text-[var(--brand)] transition hover:bg-[#eef9fb]" download href="/read-only-guide.txt">
+              <a
+                className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold shadow-sm transition ${
+                  post.file
+                    ? "bg-[var(--brand)] text-white hover:bg-[var(--brand-strong)]"
+                    : "border border-[#9ac9d5] text-[var(--brand)] hover:bg-[#eef9fb]"
+                }`}
+                download={post.file?.fileName ?? "document-exemple.pdf"}
+                href={post.file?.downloadUrl ?? "/document-exemple.pdf"}
+              >
                 <Download aria-hidden="true" size={17} />
-                Télécharger
+                {post.file ? "Télécharger le PDF" : "Télécharger"}
               </a>
             </div>
           </article>

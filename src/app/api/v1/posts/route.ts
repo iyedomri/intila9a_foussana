@@ -52,6 +52,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     title: parsed.data.title,
     description: parsed.data.description,
     type: parsed.data.type,
+    file: parsed.data.file
+      ? {
+          id: crypto.randomUUID(),
+          fileName: parsed.data.file.fileName,
+          mimeType: parsed.data.file.mimeType,
+          size: parsed.data.file.size,
+          dataBase64: parsed.data.file.dataBase64,
+        }
+      : undefined,
   });
 
   return NextResponse.json(
@@ -60,6 +69,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         post: {
           id: post.id,
           grade: post.grade,
+          hasFile: Boolean(post.file),
+          fileName: post.file?.fileName,
           createdAt: post.createdAt.toISOString(),
         },
       },

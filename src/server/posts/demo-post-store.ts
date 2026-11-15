@@ -8,6 +8,14 @@ export const DEMO_POST_TYPES = ["EXERCISE", "EXAM", "LESSON_NOTE"] as const;
 
 export type DemoPostType = (typeof DEMO_POST_TYPES)[number];
 
+export interface DemoPostFile {
+  readonly id: string;
+  readonly fileName: string;
+  readonly mimeType: string;
+  readonly size: number;
+  readonly dataBase64: string;
+}
+
 export interface DemoPost {
   readonly id: string;
   readonly authorId: string;
@@ -18,6 +26,7 @@ export interface DemoPost {
   readonly title: string;
   readonly description: string;
   readonly type: DemoPostType;
+  readonly file?: DemoPostFile;
   readonly createdAt: Date;
 }
 
@@ -53,4 +62,8 @@ export function createDemoPost(
 
 export function listDemoPostsByGrade(grade: number): readonly DemoPost[] {
   return getState().posts.filter((post) => post.grade === grade);
+}
+
+export function getDemoPostById(id: string): DemoPost | undefined {
+  return getState().posts.find((post) => post.id === id);
 }
