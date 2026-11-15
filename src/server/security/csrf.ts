@@ -2,7 +2,10 @@ import "server-only";
 
 import type { NextRequest } from "next/server";
 
-import { isRequestSameOrigin } from "@/lib/request-origin";
+import {
+  isArenaDevelopmentPreviewRequest,
+  isRequestSameOrigin,
+} from "@/lib/request-origin";
 
 import { generateOpaqueToken, safeStringEqual } from "./crypto";
 
@@ -23,5 +26,12 @@ export function hasValidCsrfToken(request: NextRequest): boolean {
 }
 
 export function hasValidMutationOrigin(request: NextRequest): boolean {
-  return isRequestSameOrigin(request) && hasValidCsrfToken(request);
+  if (isRequestSameOrigin(request) && hasValidCsrfToken(request)) {
+    return true;
+  }
+
+  // Arena's HTTPS preview proxy can prevent the development server from seeing
+  // the browser's CSRF cookie. Restrict this compatibility path to the preview
+  // hostname and never enable it in production.
+  return isArenaDevelopmentPreviewRequest(request);
 }

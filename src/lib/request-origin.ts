@@ -17,6 +17,20 @@ function isArenaDevelopmentPreview(origin: URL): boolean {
   );
 }
 
+export function isArenaDevelopmentPreviewRequest(request: NextRequest): boolean {
+  const origin = request.headers.get("origin");
+
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    return isArenaDevelopmentPreview(new URL(origin));
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Compares the browser origin to the host/protocol that reached this request.
  * Arena's reverse proxy terminates HTTPS outside the development server and may
