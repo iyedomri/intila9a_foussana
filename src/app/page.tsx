@@ -37,15 +37,15 @@ export default function HomePage(): ReactNode {
             tone="mint"
           />
           <AccessCard
-            description="Accéder à l’espace professionnel avec votre compte enseignant."
-            href="/login"
+            description="Accéder à l’espace professionnel avec un mot de passe enseignant."
+            href="/teacher-access"
             icon={<BookOpenCheck aria-hidden="true" size={25} />}
             label="Je suis enseignant"
             tone="gold"
           />
           <AccessCard
-            description="Gérer l’établissement avec votre compte Direction individuel."
-            href="/login"
+            description="Gérer l’établissement avec le mot de passe Direction."
+            href="/director-access"
             icon={<ShieldCheck aria-hidden="true" size={25} />}
             label="Je suis Direction"
             tone="navy"

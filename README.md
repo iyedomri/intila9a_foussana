@@ -88,7 +88,9 @@ Choose a space from the opening screen. The student and parent buttons open a
 flow can be reviewed without authentication. Private class posts and their files
 are deliberately not exposed there: in the released system they remain scoped to
 the authenticated student or linked parent. The teacher and Director buttons use
-the secure account flow; their local demo cards can prefill a test account.
+password-only **local preview** screens; each can prefill its own demo password.
+No email input is shown in that local preview flow. Production will retain
+individual accountable accounts rather than shared passwords.
 
 You can also test logout and the password-reset flow. No demo account exists
 outside local development.
