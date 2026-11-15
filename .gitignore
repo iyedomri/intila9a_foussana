@@ -26,6 +26,9 @@ prisma/generated/
 .vscode/
 .idea/
 
+# TypeScript incremental build state
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*
