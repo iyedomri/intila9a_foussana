@@ -24,18 +24,6 @@ const demoCredentials: readonly DemoCredential[] = [
     password: "Demo!Teacher2026",
     description: "Publications et contenus de ses classes",
   },
-  {
-    label: "Élève",
-    email: "student@demo.intila9a.local",
-    password: "Demo!Student2026",
-    description: "Consultation protégée de sa classe",
-  },
-  {
-    label: "Parent",
-    email: "parent@demo.intila9a.local",
-    password: "Demo!Parent2026",
-    description: "Vue limitée aux enfants liés",
-  },
 ];
 
 interface CsrfResponse {
@@ -192,7 +180,7 @@ export function LoginForm(): ReactNode {
 
       <aside aria-label="Comptes de démonstration" className="rounded-3xl border border-[#cce7ef] bg-[#edf8fb] p-5 sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#38718a]">Aperçu local</p>
-        <h2 className="mt-2 text-xl font-bold tracking-tight text-[var(--ink)]">Tester chaque rôle</h2>
+        <h2 className="mt-2 text-xl font-bold tracking-tight text-[var(--ink)]">Tester les accès sécurisés</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
           Ces comptes sont uniquement disponibles dans le serveur local de démonstration.
         </p>

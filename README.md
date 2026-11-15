@@ -83,9 +83,15 @@ npm run dev
 # open http://localhost:3000
 ```
 
-Choose any role card on the login screen to prefill a local-only demo account,
-then select **Se connecter**. You can test logout and the password-reset flow as
-well. No demo account exists outside local development.
+Choose a space from the opening screen. The student and parent buttons open a
+**read-only local preview** with a generic, non-personal download so that this
+flow can be reviewed without authentication. Private class posts and their files
+are deliberately not exposed there: in the released system they remain scoped to
+the authenticated student or linked parent. The teacher and Director buttons use
+the secure account flow; their local demo cards can prefill a test account.
+
+You can also test logout and the password-reset flow. No demo account exists
+outside local development.
 
 The preview uses Node.js 22.12+ and binds to port `3000`. Its public production
 replacement will use PostgreSQL 16+, Prisma, private object storage, a mail
