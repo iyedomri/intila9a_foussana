@@ -1,14 +1,14 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { getDemoPostById } from "@/server/posts/demo-post-store";
+import { getPostById } from "@/server/posts/post-service";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id } = await params;
-  const post = getDemoPostById(id);
+  const post = await getPostById(id);
 
   if (!post || !post.file) {
     return new NextResponse("Document introuvable", { status: 404 });

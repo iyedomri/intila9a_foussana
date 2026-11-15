@@ -7,7 +7,7 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/server/auth/session-service";
 import { canEditPost, canModerateAllContent } from "@/server/authorization/policy";
-import { deleteDemoPost, getDemoPostById } from "@/server/posts/demo-post-store";
+import { deletePost, getPostById } from "@/server/posts/post-service";
 import { apiError } from "@/server/security/api-response";
 import { hasValidMutationOrigin } from "@/server/security/csrf";
 
@@ -22,7 +22,7 @@ export async function GET(
   context: RouteParams,
 ): Promise<NextResponse> {
   const { id } = await context.params;
-  const post = getDemoPostById(id);
+  const post = await getPostById(id);
 
   if (!post) {
     return apiError("NOT_FOUND", "Publication introuvable.", 404);
@@ -78,7 +78,7 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
-  const post = getDemoPostById(id);
+  const post = await getPostById(id);
 
   if (!post) {
     return apiError("NOT_FOUND", "Publication introuvable.", 404);
@@ -94,7 +94,7 @@ export async function DELETE(
   const body = await request.json().catch(() => ({}));
   const reason = typeof body?.reason === "string" ? body.reason : "Supprimé par la Direction";
 
-  const success = deleteDemoPost(id, reason);
+  const success = await deletePost(id, reason, session.principal.id);
   if (!success) {
     return apiError("NOT_FOUND", "Impossible de supprimer la publication.", 404);
   }
