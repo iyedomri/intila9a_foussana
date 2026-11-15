@@ -7,13 +7,13 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/server/auth/session-service";
 import { canCreatePosts } from "@/server/authorization/policy";
-import { createDemoPost, listAllDemoPosts } from "@/server/posts/demo-post-store";
+import { createPost, listAllPosts } from "@/server/posts/post-service";
 import { apiError } from "@/server/security/api-response";
 import { hasValidMutationOrigin } from "@/server/security/csrf";
 import { createPostSchema } from "@/server/validators/post";
 
 export async function GET(): Promise<NextResponse> {
-  const posts = listAllDemoPosts(false).map((post) => ({
+  const posts = (await listAllPosts(false)).map((post) => ({
     id: post.id,
     authorName: post.authorName,
     authorRole: post.authorRole,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return apiError("INVALID_INPUT", "Please check the publication fields.", 400);
   }
 
-  const post = createDemoPost({
+  const post = await createPost({
     authorId: session.principal.id,
     authorName: parsed.data.authorName,
     authorRole: session.principal.role,

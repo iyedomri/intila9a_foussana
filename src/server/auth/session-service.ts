@@ -8,10 +8,14 @@ import {
   createDemoPasswordReset,
   getDemoSession,
   getLatestDemoSessionForRole,
+  issueSessionForUser,
   revokeAllDemoSessions,
   revokeDemoSession,
 } from "./demo-auth-store";
 import type { AuthenticatedSession, LoginAttemptResult, UserRole } from "./types";
+import { isDatabaseConfigured } from "@/server/db/pool";
+import { ensureDatabaseSchema } from "@/server/db/init";
+import { dbVerifyUserPassword } from "@/server/db/users";
 
 export const SESSION_COOKIE_NAME = "if_session";
 
@@ -47,8 +51,22 @@ export async function loginWithPassword(
   email: string,
   password: string,
 ): Promise<LoginAttemptResult> {
-  // The demo adapter is available for local visual testing or demo deployments.
-  // The production Prisma-backed adapter is introduced with the persistent application layer.
+  if (isDatabaseConfigured()) {
+    try {
+      await ensureDatabaseSchema();
+      const { user, isLocked } = await dbVerifyUserPassword(email, password);
+      if (isLocked) {
+        return { ok: false, reason: "LOCKED" };
+      }
+      if (user) {
+        const result = issueSessionForUser(user);
+        return { ok: true, result };
+      }
+    } catch (err) {
+      console.error("[Database Login Error - Falling back to demo auth]", err);
+    }
+  }
+
   assertLocalDemoMode();
   return attemptDemoLogin(email, password);
 }
