@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { TeacherPostForm } from "@/features/posts/teacher-post-form";
 import { getCurrentSession } from "@/server/auth/session-service";
+import { canCreatePosts } from "@/server/authorization/policy";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,20 @@ export const metadata = {
 export default async function TeacherPostPage(): Promise<ReactNode> {
   const session = await getCurrentSession();
 
-  if (!session || session.principal.role !== "TEACHER") {
+  if (!session || !canCreatePosts(session.principal)) {
     redirect("/teacher-access");
   }
+
+  const roleTitle =
+    session.principal.role === "DIRECTOR"
+      ? "Espace Direction"
+      : "Espace enseignant";
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-5 py-8 sm:px-8 lg:py-12">
       <header className="mb-8 flex flex-col gap-4 border-b border-[var(--line)] pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#47758b]">Espace enseignant</p>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#47758b]">{roleTitle}</p>
           <p className="mt-1 text-sm text-[var(--muted)]">Connecté en tant que {session.principal.firstName} {session.principal.lastName}</p>
         </div>
         <div className="flex items-center gap-3">

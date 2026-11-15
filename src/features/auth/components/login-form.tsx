@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowRight, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 interface DemoCredential {
@@ -55,7 +54,6 @@ async function requestCsrfToken(): Promise<string> {
 }
 
 export function LoginForm(): ReactNode {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -91,8 +89,7 @@ export function LoginForm(): ReactNode {
         return;
       }
 
-      router.replace("/dashboard");
-      router.refresh();
+      window.location.assign("/dashboard");
     } catch {
       setError("La connexion sécurisée est indisponible. Réessayez.");
     } finally {

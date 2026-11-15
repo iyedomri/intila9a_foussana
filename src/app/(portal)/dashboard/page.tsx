@@ -1,4 +1,5 @@
-import { ArrowUpRight, Bell, CalendarDays, ClipboardList, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowUpRight, Bell, CalendarDays, ClipboardList, PlusCircle, ShieldCheck, UserRound } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -65,6 +66,15 @@ export default async function DashboardPage(): Promise<ReactNode> {
             <p className="text-sm font-bold text-[var(--ink)]">{session.principal.firstName} {session.principal.lastName}</p>
             <p className="text-xs text-[var(--muted)]">{roleLabel(session.principal.role)}</p>
           </div>
+          {session.principal.role === "TEACHER" || session.principal.role === "DIRECTOR" ? (
+            <Link
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[var(--brand)] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--brand-strong)]"
+              href="/teacher-post"
+            >
+              <PlusCircle aria-hidden="true" size={17} />
+              Publier pour une classe
+            </Link>
+          ) : null}
           <LogoutButton />
         </div>
       </header>

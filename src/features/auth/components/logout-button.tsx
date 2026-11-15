@@ -1,7 +1,6 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
 interface CsrfResponse {
@@ -23,7 +22,6 @@ async function getCsrfToken(): Promise<string> {
 }
 
 export function LogoutButton(): ReactNode {
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   async function logout(): Promise<void> {
@@ -37,8 +35,7 @@ export function LogoutButton(): ReactNode {
         headers: { "X-CSRF-Token": csrfToken },
       });
     } finally {
-      router.replace("/login");
-      router.refresh();
+      window.location.assign("/");
     }
   }
 

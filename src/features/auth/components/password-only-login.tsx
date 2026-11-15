@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowRight, Eye, EyeOff, KeyRound, LoaderCircle, ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 export type PrivilegedAccessRole = "TEACHER" | "DIRECTOR";
@@ -55,7 +54,6 @@ async function requestCsrfToken(): Promise<string> {
 }
 
 export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRole }>): ReactNode {
-  const router = useRouter();
   const profile = accessProfiles[role];
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -85,8 +83,8 @@ export function PasswordOnlyLogin({ role }: Readonly<{ role: PrivilegedAccessRol
         return;
       }
 
-      router.replace(role === "TEACHER" ? "/teacher-post" : "/dashboard");
-      router.refresh();
+      const targetPath = role === "TEACHER" ? "/teacher-post" : "/dashboard";
+      window.location.assign(targetPath);
     } catch {
       setError("La connexion sécurisée est indisponible. Réessayez.");
     } finally {
