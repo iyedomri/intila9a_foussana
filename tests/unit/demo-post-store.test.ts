@@ -6,6 +6,7 @@ import {
   getDemoPostById,
   listAllDemoPosts,
   listDemoPostsByGrade,
+  listTeacherPosts,
 } from "../../src/server/posts/demo-post-store";
 
 describe("demo-post-store", () => {
@@ -68,6 +69,23 @@ describe("demo-post-store", () => {
     // Parent in grade 1 should see parent-only post
     const parentFeed = listDemoPostsByGrade(1, "PARENTS");
     expect(parentFeed.some((p) => p.id === parentOnlyPost.id)).toBe(true);
+
+    // Teacher-only post created by Director
+    const teacherOnlyPost = createDemoPost({
+      authorId: "director-fethi",
+      authorName: "Fethi Omri (Direction)",
+      authorRole: "DIRECTOR",
+      subject: "Conseil des maîtres",
+      grade: 0,
+      title: "Réunion urgente des enseignants",
+      description: "Salle 1 à 15h",
+      type: "ANNOUNCEMENT",
+      audience: "TEACHERS",
+    });
+
+    // Neither students nor parents should see teacher-only post
+    expect(listDemoPostsByGrade(1, "STUDENTS").some((p) => p.id === teacherOnlyPost.id)).toBe(false);
+    expect(listDemoPostsByGrade(1, "PARENTS").some((p) => p.id === teacherOnlyPost.id)).toBe(false);
   });
 
   it("supports soft deletion / moderation by director with reason tracking", () => {
@@ -100,5 +118,27 @@ describe("demo-post-store", () => {
     // listAllDemoPosts(false) shouldn't contain it, but listAllDemoPosts(true) should
     expect(listAllDemoPosts(false).some((p) => p.id === post.id)).toBe(false);
     expect(listAllDemoPosts(true).some((p) => p.id === post.id)).toBe(true);
+  });
+
+  it("retrieves teacher-targeted posts and director broadcasts for teacher space", () => {
+    const teacherMeeting = createDemoPost({
+      authorId: "director-fethi",
+      authorName: "Fethi Omri",
+      authorRole: "DIRECTOR",
+      subject: "Conseil pédagogique",
+      grade: 0,
+      title: "Convocation conseil de classe",
+      description: "Présence requise jeudi.",
+      type: "ANNOUNCEMENT",
+      audience: "TEACHERS",
+    });
+
+    const teacherPosts = listTeacherPosts();
+    expect(teacherPosts.some((p) => p.id === teacherMeeting.id)).toBe(true);
+
+    // Delete the meeting and verify it is no longer listed in active teacher posts
+    deleteDemoPost(teacherMeeting.id, "Réunion reportée");
+    const updatedTeacherPosts = listTeacherPosts();
+    expect(updatedTeacherPosts.some((p) => p.id === teacherMeeting.id)).toBe(false);
   });
 });

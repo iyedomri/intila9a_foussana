@@ -37,7 +37,7 @@ export default function HomePage(): ReactNode {
             tone="mint"
           />
           <AccessCard
-            description="Publier les cours, devoirs et examens pour vos classes."
+            description="Consulter les convocations & réunions de la Direction et publier pour vos classes."
             href="/teacher-access"
             icon={<BookOpenCheck aria-hidden="true" size={25} />}
             label="Je suis enseignant"

@@ -43,6 +43,18 @@ describe("teacher post validation", () => {
       expect(parsed.data.type).toBe("ANNOUNCEMENT");
       expect(parsed.data.audience).toBe("PARENTS");
     }
+
+    const teacherOnlyPost = {
+      ...validPost,
+      grade: 0,
+      type: "ANNOUNCEMENT",
+      audience: "TEACHERS",
+    };
+    const parsedTeacher = createPostSchema.safeParse(teacherOnlyPost);
+    expect(parsedTeacher.success).toBe(true);
+    if (parsedTeacher.success) {
+      expect(parsedTeacher.data.audience).toBe("TEACHERS");
+    }
   });
 
   it("rejects files exceeding size limits", () => {
